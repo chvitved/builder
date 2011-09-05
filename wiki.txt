@@ -1,0 +1,1 @@
+git must be on path (when starting the jvm for example in eclipse)

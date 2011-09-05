@@ -1,0 +1,9 @@
+/.classpath
+/.project
+/.scala_dependencies
+/.settings
+target
+/.target
+/bin
+/storage
+/testsruntime
