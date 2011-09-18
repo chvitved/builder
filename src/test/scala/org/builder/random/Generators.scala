@@ -7,7 +7,12 @@ import org.scalacheck.util.Buildable
 
 object Generators {
 
-	val genNames = Gen.alphaStr suchThat (c => c.length > 2 && c.length < 50 )
+	//val genNames = Gen.alphaStr suchThat (c => c.length > 2 && c.length < 50 )
+	val genNames = for{
+		size <- Gen.choose(1,50);
+		str <- Gen.containerOfN[List, Char](size, Gen.alphaChar) map (_.mkString)
+	} yield str
+	
 	val genTextFileSize = Gen.choose(0, 50 * 1024) map (Text(_))
 	val genBinaryFileSize = Gen.choose(0, 20 * 1024 * 1024) map (Binary(_))
 	val genByte = Gen.choose(Byte.MinValue, Byte.MaxValue)
