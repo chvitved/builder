@@ -7,13 +7,28 @@ import org.scalacheck.util.Buildable
 
 object Generators {
 
-	val genNames = Gen.alphaStr suchThat (_.length > 2)
-	val genFile = genNames map (FileLeaf(_))
+	val genNames = Gen.alphaStr suchThat (c => c.length > 2 && c.length < 50 )
+	val genTextFileSize = Gen.choose(0, 50 * 1024) map (Text(_))
+	val genBinaryFileSize = Gen.choose(0, 20 * 1024 * 1024) map (Binary(_))
+	val genByte = Gen.choose(Byte.MinValue, Byte.MaxValue)
+	def genBytes(size: Int) = Gen.containerOfN[Stream,Byte](size, Gen.choose(Byte.MinValue, Byte.MaxValue))
+	
+	def genTextByte : Gen[Byte] = Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE) suchThat ((c) => 
+		Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)) map (_.getNumericValue.toByte)
+	
+	val genFile = for{
+		name <- genNames
+		fileType <- Gen.frequency((20, genTextFileSize), (1, genBinaryFileSize))
+	} yield FileLeaf(name, fileType)
 
 	def genDir(sz: Int): Gen[FileTree] = {
+		val fileFrequency = 4
+		val dirFrequency = 1
+		val totalFrequency = fileFrequency + dirFrequency
+		
 		if (sz <= 0) genFile
 		else {
-			val children = Gen.listOfN(5, Gen.frequency((4, genFile), (1, genDir(sz - 5))))
+			val children = Gen.listOfN(totalFrequency, Gen.frequency((fileFrequency, genFile), (dirFrequency, genDir(sz - totalFrequency))))
 			for{
 				c <- children
 				name <- genNames
@@ -22,8 +37,5 @@ object Generators {
 	}
 
 	val genFileTree = Gen.sized(sz => genDir(sz))
-	
-	//val originDir = new Directory("origin", List())
-	//val randomTestsDir = new Directory("randomtests", List(originDir))
-	
+		
 }

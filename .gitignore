@@ -3,6 +3,7 @@
 /.scala_dependencies
 /.settings
 target
+.DS_Store
 lib_managed/
 src_managed/
 project/boot/
