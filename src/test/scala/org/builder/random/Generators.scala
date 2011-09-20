@@ -16,7 +16,6 @@ object Generators {
 	val genTextFileSize = Gen.choose(0, 50 * 1024) map (Text(_))
 	val genBinaryFileSize = Gen.choose(0, 20 * 1024 * 1024) map (Binary(_))
 	val genByte = Gen.choose(Byte.MinValue, Byte.MaxValue)
-	def genBytes(size: Int) = Gen.containerOfN[Stream,Byte](size, Gen.choose(Byte.MinValue, Byte.MaxValue))
 	
 	def genTextByte : Gen[Byte] = Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE) suchThat ((c) => 
 		Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)) map (_.getNumericValue.toByte)

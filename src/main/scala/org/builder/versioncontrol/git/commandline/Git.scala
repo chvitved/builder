@@ -47,7 +47,7 @@ class Git(directory: File) extends VersionControl{
   
   override def add(file: File) {
     checkFilePath(file)
-    val command = "git add " + file.getName()
+    val command = "git add " + file.getCanonicalPath()
     GitCommand.execute(command)
   }
   
@@ -58,7 +58,7 @@ class Git(directory: File) extends VersionControl{
   }
   
   private def checkFilePath(file: java.io.File): Unit = {
-    if (!file.getParentFile().equals(dir)) {
+    if (!file.getParentFile().getCanonicalFile().toString().contains(dir.getCanonicalFile().toString())) {
       throw new RuntimeException(String.format("the file %s is not in the directory %s", file, dir))
     }
   }

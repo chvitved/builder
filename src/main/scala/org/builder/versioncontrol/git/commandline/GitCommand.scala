@@ -52,7 +52,7 @@ object GitCommand {
   }
   
   class GitCommandException(command: String, ex: Exception, dir: File) 
-  		extends Exception("Is git on the path?" + "Could not invoke git command '" + command + "' in directory " + dir, ex)
+  		extends Exception("Is git on the path? " + "Could not invoke git command '" + command + "' in directory " + dir + ". " + ex.getMessage(), ex)
   
   class GitCommandNonZeroExitCodeException(command: String, val exitCode: Int, val output: String, val error: String, val dir: File) 
   		extends Exception("git command exited with exitcode " + exitCode + "\ncommand: " + command + "\ndirecotry: " + dir + "\nstdout: " + output + "\nstderror: " + error)
