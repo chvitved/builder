@@ -40,6 +40,44 @@ object Generators {
 		}
 	}
 
-	val genFileTree = Gen.sized(sz => genDir(sz))
+	val genFileTree: Gen[FileTree] = Gen.sized(sz => genDir(sz))
+	
+	
+	
+	
+	
+	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
+		fileTree match {
+			case dir: Directory => {
+				Gen.frequency((1, genChangeDir(dir, parentPath)), (10, genChangeDirContent(dir, parentPath)), (20,genEmptyChange))
+			}
+			case file: FileLeaf =>
+				Gen.frequency((1, genChangeFile(file, parentPath)), (10, genEmptyChange))
+		}
+	}
+	
+	val genEmptyChange: Gen[Seq[Change]] = Gen.value(Seq())
+	
+	def genChangeDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		//moveDir.combine(genChangeDirContent(dir, parentPath)) ((a, b) => a ++ b)
+		for{
+			mDir <- moveDir
+			mDirContent <- genChangeDirContent(dir, parentPath)
+		} yield mDir ++ mDirContent
+	}
+		
+	val moveDir: Gen[Seq[Change]] = null
+	
+	def genChangeDirContent(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		null
+	}
+	
+	def genChangeFile(file: FileLeaf, parentPath: File): Seq[Change] = {
+		null
+	}
+	
+	
+	val genFilesWithChanges : Gen[(FileTree, Seq[Change])] = 
+		genFileTree map (fileTree => (fileTree, genChange(fileTree)))
 		
 }

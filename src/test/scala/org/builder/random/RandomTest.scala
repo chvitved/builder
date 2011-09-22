@@ -14,6 +14,7 @@ object RandomTest extends Properties("files") {
 	
 	val testDir = "randomtests"
 	val origin = new File(testDir + File.separator + "origin")
+	val repo1 = new File(testDir + File.separator + "repo1")
 	
 	val vc = new Git(origin)
 	
@@ -22,9 +23,17 @@ object RandomTest extends Properties("files") {
 	var counter = 0	
 	property("tree") =  Prop.forAll((files: FileTree) => {
 		org.apache.commons.io.FileUtils.forceMkdir(origin)
+		
 		vc.init()
 		createFiles(files)
 		vc.commit("committet all files")
+		
+		org.apache.commons.io.FileUtils.forceMkdir(repo1)
+		
+		val repo1Vc = new Git(repo1)
+		repo1Vc.clone(origin.getCanonicalPath())
+		
+		
 		counter += 1
 		println(counter)
 

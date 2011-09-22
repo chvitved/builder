@@ -1,0 +1,5 @@
+Random test generere altid en rod mappe i randomtests/origin. 
+Der skal genereres tilfældige mapper og filer også helt ude i roden på origin mappen
+
+
+check at git båder adder file som binære file og text filer
