@@ -1,14 +1,15 @@
 	package org.builder.random
 
+import java.io.BufferedOutputStream
 import java.io.File
-	import java.io.FileOutputStream
-	import org.scalacheck.Arbitrary
-	import org.scalacheck.Prop
-	import org.scalacheck.Properties
-	import java.io.BufferedOutputStream
-	import org.scalacheck.Gen
-	import org.builder.util.FileUtils
-	import org.builder.versioncontrol.git.commandline.Git
+import java.io.FileOutputStream
+
+import org.builder.util.FileUtils
+import org.builder.versioncontrol.git.commandline.Git
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
+import org.scalacheck.Prop
+import org.scalacheck.Properties
 
 object RandomTest extends Properties("files") {
 	

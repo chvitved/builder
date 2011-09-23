@@ -49,7 +49,7 @@ object Generators {
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
 		fileTree match {
 			case dir: Directory => {
-				Gen.frequency((1, genChangeDir(dir, parentPath)), (10, genChangeDirContent(dir, parentPath)), (20,genEmptyChange))
+				Gen.frequency((1, genChangeDir(dir, parentPath)), (5, genChangeDirContent(dir, parentPath)), (5,genEmptyChange))
 			}
 			case file: FileLeaf =>
 				Gen.frequency((1, genChangeFile(file, parentPath)), (10, genEmptyChange))
@@ -59,17 +59,32 @@ object Generators {
 	val genEmptyChange: Gen[Seq[Change]] = Gen.value(Seq())
 	
 	def genChangeDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		Gen.frequency((5, genMoveDir(dir, parentPath)), (1, genDeleteDir(dir, parentPath)))
+	}
+	
+	def genDeleteDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		Gen.value(Seq(Remove(new File(parentPath, dir.name))))
+	}
+	
+	def genMoveDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
 		//moveDir.combine(genChangeDirContent(dir, parentPath)) ((a, b) => a ++ b)
 		for{
-			mDir <- moveDir
+			newName <- genNames
+			//mDir could be better now we rename the dir, its placed in the same parent dir
+			mDir <- Gen.value(Seq(Move(new File(parentPath, dir.name), new File(parentPath, newName)))) 
 			mDirContent <- genChangeDirContent(dir, parentPath)
 		} yield mDir ++ mDirContent
 	}
 		
-	val moveDir: Gen[Seq[Change]] = null
 	
 	def genChangeDirContent(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
-		null
+		val seq = for (child <- dir.children) yield genChange(child, new File(parentPath, dir.name))
+		(seq :\ genEmptyChange) ((gen1, gen2) => 
+			for {
+				g1 <- gen1
+				g2 <- gen2
+			} yield g1 ++ g2
+		)
 	}
 	
 	def genChangeFile(file: FileLeaf, parentPath: File): Seq[Change] = {
@@ -77,7 +92,9 @@ object Generators {
 	}
 	
 	
-	val genFilesWithChanges : Gen[(FileTree, Seq[Change])] = 
-		genFileTree map (fileTree => (fileTree, genChange(fileTree)))
+	val genFilesWithChanges : Gen[(FileTree, Seq[Change])] = for {
+		ft <- genFileTree
+		filetreeWithChanges <- genChange(ft, null)
+	} yield (ft, filetreeWithChanges)
 		
 }
