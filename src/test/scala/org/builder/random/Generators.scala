@@ -4,6 +4,7 @@ import java.io.File
 import org.apache.commons.io.FileUtils
 import org.scalacheck.Arbitrary
 import org.scalacheck.util.Buildable
+import scala.util.Random
 
 object Generators {
 
@@ -20,24 +21,30 @@ object Generators {
 	def genTextByte : Gen[Byte] = Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE) suchThat ((c) => 
 		Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)) map (_.getNumericValue.toByte)
 	
-	val genFile = for{
+	val genFile: Gen[FileLeaf]= for{
 		name <- genNames
 		fileType <- Gen.frequency((20, genTextFileSize), (1, genBinaryFileSize))
 	} yield FileLeaf(name, fileType)
 
+	
 	def genDir(sz: Int): Gen[FileTree] = {
 		val fileFrequency = 4
 		val dirFrequency = 1
-		val totalFrequency = fileFrequency + dirFrequency
+		var created = 0
 		
-		if (sz <= 0) genFile
-		else {
-			val children = Gen.listOfN(totalFrequency, Gen.frequency((fileFrequency, genFile), (dirFrequency, genDir(sz - totalFrequency))))
-			for{
-				c <- children
-				name <- genNames
-			} yield Directory(name, c)
+		def doGenDir(): Gen[FileTree] = {
+			if ((sz - created) <= 0) genFile
+			else {
+				val n = Random.nextInt(10)
+				created += n
+				val children = Gen.listOfN(n, Gen.frequency((fileFrequency, genFile), (dirFrequency, doGenDir())))
+				for{
+					c <- children
+					name <- genNames
+				} yield Directory(name, c)
+			}
 		}
+		doGenDir()
 	}
 
 	val genFileTree: Gen[FileTree] = Gen.sized(sz => genDir(sz))
@@ -49,7 +56,7 @@ object Generators {
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
 		fileTree match {
 			case dir: Directory => {
-				Gen.frequency((1, genChangeDir(dir, parentPath)), (5, genChangeDirContent(dir, parentPath)), (5,genEmptyChange))
+				Gen.frequency((1, genChangeDir(dir, parentPath)), (5, genChangeDirContent(dir, parentPath)), (5, genAddToDir(dir, parentPath)), (5,genEmptyChange))
 			}
 			case file: FileLeaf =>
 				Gen.frequency((1, genChangeFile(file, parentPath)), (10, genEmptyChange))
@@ -57,9 +64,41 @@ object Generators {
 	}
 	
 	val genEmptyChange: Gen[Seq[Change]] = Gen.value(Seq())
+
+	def genAddToDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		Gen.frequency((3, genAddFile(dir, parentPath)), (1, genAddDir(dir, parentPath)))
+	}
+	
+	def foldValues(seq: Seq[Gen[Seq[Change]]]): Gen[Seq[Change]] = {
+		(seq :\ genEmptyChange) ((gen1, gen2) => 
+			for {
+				g1 <- gen1
+				g2 <- gen2
+			} yield g1 ++ g2
+		)
+	}
+	
+	def genAddFile(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		for (f <- genFile) yield Seq(AddFile(new File(parentPath, f.name), f.fileType))
+	}
+	
+	def genAddDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		for {
+			tree <- genDir(Random.nextInt(5))
+			fileTuple <- tree.getFiles
+		} yield fileTuple match {
+			case (file, null) => AddDir(file)
+			case (file, fileType) => AddFile(file, fileType)
+		}
+	}
+	
+	def genChangeDirContent(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
+		val seq = for (child <- dir.children) yield genChange(child, new File(parentPath, dir.name))
+		foldValues(seq)
+	}
 	
 	def genChangeDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
-		Gen.frequency((5, genMoveDir(dir, parentPath)), (1, genDeleteDir(dir, parentPath)))
+		Gen.frequency((1, genMoveDir(dir, parentPath)), (1, genDeleteDir(dir, parentPath)))
 	}
 	
 	def genDeleteDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
@@ -70,26 +109,39 @@ object Generators {
 		//moveDir.combine(genChangeDirContent(dir, parentPath)) ((a, b) => a ++ b)
 		for{
 			newName <- genNames
-			//mDir could be better now we rename the dir, its placed in the same parent dir
+			//could be better. when we rename the dir, its placed in the same parent dir
 			mDir <- Gen.value(Seq(Move(new File(parentPath, dir.name), new File(parentPath, newName)))) 
 			mDirContent <- genChangeDirContent(dir, parentPath)
 		} yield mDir ++ mDirContent
 	}
+	
+	
+	def genChangeFile(file: FileLeaf, parentPath: File): Gen[Seq[Change]] = {
+		val gen = Gen.frequency((5, genEditFile(file, parentPath)), (1, genDeleteFile(file, parentPath)), (1, genMoveFile(file, parentPath)))
+		gen map((Seq(_)))
+	}
+	
+	def genEditFile(file: FileLeaf, parentPath: File): Gen[Change] = {
+		val fileSize = file.fileType.size
+		val changes = for {
+			change <- 0 to Random.nextInt(10)
+			position = Random.nextInt(fileSize)
+			length = Random.nextInt(fileSize - position)
+		} yield AFileChange(position, length)
 		
-	
-	def genChangeDirContent(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
-		val seq = for (child <- dir.children) yield genChange(child, new File(parentPath, dir.name))
-		(seq :\ genEmptyChange) ((gen1, gen2) => 
-			for {
-				g1 <- gen1
-				g2 <- gen2
-			} yield g1 ++ g2
-		)
+		Gen.value(Edit(new File(parentPath, file.name), changes))
 	}
 	
-	def genChangeFile(file: FileLeaf, parentPath: File): Seq[Change] = {
-		null
+	def genDeleteFile(file: FileLeaf, parentPath: File): Gen[Change] = {
+		Gen.value(Remove(new File(parentPath, file.name)))
 	}
+	
+	def genMoveFile(file: FileLeaf, parentPath: File): Gen[Change] = {
+		//TODO too simple file is just renamed. It stays in the current folder
+		genNames map((name) => (Move(new File(parentPath, file.name), new File(parentPath, name))))
+	}
+	
+	
 	
 	
 	val genFilesWithChanges : Gen[(FileTree, Seq[Change])] = for {
