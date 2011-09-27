@@ -49,14 +49,10 @@ object Generators {
 
 	val genFileTree: Gen[FileTree] = Gen.sized(sz => genDir(sz))
 	
-	
-	
-	
-	
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
 		fileTree match {
 			case dir: Directory => {
-				Gen.frequency((1, genChangeDir(dir, parentPath)), (5, genChangeDirContent(dir, parentPath)), (5, genAddToDir(dir, parentPath)), (5,genEmptyChange))
+				Gen.frequency((1, genChangeDir(dir, parentPath)), (20, genChangeDirContent(dir, parentPath)), (5, genAddToDir(dir, parentPath)), (5,genEmptyChange))
 			}
 			case file: FileLeaf =>
 				Gen.frequency((1, genChangeFile(file, parentPath)), (10, genEmptyChange))
@@ -66,7 +62,9 @@ object Generators {
 	val genEmptyChange: Gen[Seq[Change]] = Gen.value(Seq())
 
 	def genAddToDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
-		Gen.frequency((3, genAddFile(dir, parentPath)), (1, genAddDir(dir, parentPath)))
+		val gen = for(i <- 0 to Random.nextInt(10)) 
+			yield Gen.frequency((3, genAddFile(dir, parentPath)), (1, genAddDir(dir, parentPath)))
+		foldValues(gen)
 	}
 	
 	def foldValues(seq: Seq[Gen[Seq[Change]]]): Gen[Seq[Change]] = {
@@ -125,6 +123,7 @@ object Generators {
 		val fileSize = file.fileType.size
 		val changes = for {
 			change <- 0 to Random.nextInt(10)
+			if (fileSize) > 0
 			position = Random.nextInt(fileSize)
 			length = Random.nextInt(fileSize - position)
 		} yield AFileChange(position, length)

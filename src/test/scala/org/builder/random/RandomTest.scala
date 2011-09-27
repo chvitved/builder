@@ -1,15 +1,15 @@
 	package org.builder.random
 
 import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileOutputStream
-
-import org.builder.util.FileUtils
-import org.builder.versioncontrol.git.commandline.Git
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
-import org.scalacheck.Prop
-import org.scalacheck.Properties
+	import java.io.File
+	import java.io.FileOutputStream
+	import org.builder.util.FileUtils
+	import org.builder.versioncontrol.git.commandline.Git
+	import org.scalacheck.Arbitrary
+	import org.scalacheck.Gen
+	import org.scalacheck.Properties
+	import org.scalacheck.Prop
+	import org.builder.versioncontrol.VersionControl
 
 object RandomTest extends Properties("files") {
 	
@@ -17,22 +17,53 @@ object RandomTest extends Properties("files") {
 	val origin = new File(testDir + File.separator + "origin")
 	val repo1 = new File(testDir + File.separator + "repo1")
 	
-	val vc = new Git(origin)
-	
 	implicit def arbFileTree: Arbitrary[FileTree] = Arbitrary(Generators.genFileTree)
+	implicit def fileswithChanges: Arbitrary[(FileTree, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges)
 
-	var counter = 0	
-	property("tree") =  Prop.forAll((files: FileTree) => {
-		org.apache.commons.io.FileUtils.forceMkdir(origin)
+//	property("tree") =  Prop.forAll((files: FileTree) => {
+//		org.apache.commons.io.FileUtils.forceMkdir(origin)
+//		
+//		vc.init()
+//		createFiles(files)
+//		vc.commit("committet all files")
+//		
+//		org.apache.commons.io.FileUtils.forceMkdir(repo1)
+//		
+//		val repo1Vc = new Git(repo1)
+//		repo1Vc.clone(origin.getCanonicalPath())
+//		
+//		
+//		counter += 1
+//		println(counter)
+//
+//		
+//		
+//		removeFiles();
+//		true
+//	})
+	
+	var counter = 0;
+	property("tree") =  Prop.forAll((tuple: (FileTree, Seq[Change])) => {
+		val files = tuple._1
+		println("files:")
+		FileTree.print(tuple._1, 0)
+		println("change")
+		for(c <- tuple._2) println(c)
+		println("-------------")
 		
-		vc.init()
-		createFiles(files)
-		vc.commit("committet all files")
+		
+		val rootVc = new Git(origin)
+		
+		org.apache.commons.io.FileUtils.forceMkdir(origin)
+		rootVc.init()
+		createFiles(files, rootVc)
+		rootVc.commit("committet all files")
 		
 		org.apache.commons.io.FileUtils.forceMkdir(repo1)
 		
 		val repo1Vc = new Git(repo1)
 		repo1Vc.clone(origin.getCanonicalPath())
+		createChanges(tuple._2, repo1Vc)
 		
 		
 		counter += 1
@@ -41,43 +72,72 @@ object RandomTest extends Properties("files") {
 		
 		
 		removeFiles();
+		println()
 		true
+		
+		
 	})
+	
+	private def createChanges(changes: Seq[Change], vc: VersionControl) {
+		for (c <- changes) {
+			c match {
+				case AddFile(file, fileType) => {
+					writeFileData(file.getName(), fileType, file.getParent(), vc)
+				}
+				case AddDir(file) => {
+					org.apache.commons.io.FileUtils.forceMkdir(file)
+					vc.add(file)
+				}
+				case Remove(file) => {
+					FileUtils.deleteFile(file)
+					vc.remove(file)
+				}
+				case Edit(file, changes) => {
+					//TODO
+				}
+				case Move(src, dst) => {
+					//TODO
+				}
+				
+			}
+		}
+	}
+	
 	
 	private def removeFiles() {	
 		FileUtils.deleteFile(new File(testDir));
 	}
 	
-	private def createFiles(files: FileTree) {
+	private def createFiles(files: FileTree, vc: VersionControl) {
 		val originDir = new Directory("origin", List(files))
 		val randomTestsDir = new Directory(testDir, List(originDir))
-		doCreateFiles(randomTestsDir, null)
+		doCreateFiles(randomTestsDir, null, vc)
 	}
 	
-	private def doCreateFiles(files: FileTree, parentPath: String) {
+	private def doCreateFiles(files: FileTree, parentPath: String, vc: VersionControl) {
 		files match {
 			case FileLeaf(name, fileType) => {
-			    writeFileData(name, fileType, parentPath)
+			    writeFileData(name, fileType, parentPath, vc)
 			}
 			case Directory(name, children) =>
 				val dir = new File(parentPath, name)
 				dir.mkdir()
-				for(c <- children) doCreateFiles(c, dir.getPath())
+				for(c <- children) doCreateFiles(c, dir.getPath(), vc)
 		}
 	}
 	
-	private def writeFileData(name: String, fileType: FileType, parentPath: String) {
+	private def writeFileData(name: String, fileType: FileType, parentPath: String, vc: VersionControl) {
 	  fileType match {
 	  	case Binary(size) => {
-	  		writeBytes(name, parentPath, size, Generators.genByte)
+	  		writeBytes(name, parentPath, size, Generators.genByte, vc)
 	  	}
 	  	case Text(size) => {
-	  		writeBytes(name, parentPath, size, Generators.genTextByte)
+	  		writeBytes(name, parentPath, size, Generators.genTextByte, vc)
 	  	}
 	  }
 	}
 	
-	private def writeBytes(name: String, parentPath: String, size: Int, byteGenerator: Gen[Byte]) {
+	private def writeBytes(name: String, parentPath: String, size: Int, byteGenerator: Gen[Byte], vc: VersionControl) {
 		val f = new File(parentPath, name)
 		f.createNewFile();
 		val fw = new BufferedOutputStream(new FileOutputStream(f))

@@ -51,6 +51,12 @@ class Git(directory: File) extends VersionControl{
     GitCommand.execute(command)
   }
   
+  override def remove(file: File) {
+    checkFilePath(file)
+    val command = "git rm " + file.getCanonicalPath()
+    GitCommand.execute(command)
+  }
+  
   override def apply(patchFile: File) {
   	checkFilePath(patchFile)
     val command = "git apply " + patchFile.getName()

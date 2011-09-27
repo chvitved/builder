@@ -4,7 +4,7 @@ import java.io.File
 object FileTree {
 	def print(files: FileTree, indention: Int) {
 		files match {
-			case FileLeaf(name, fileType) => println(String.format("%s%sfile %s", indent(indention), fileType, name))
+			case FileLeaf(name, fileType) => println(String.format("%s%s %s", indent(indention), name, fileType))
 			case Directory(name, children) =>  {
 				println(String.format("%sdir %s", indent(indention), name))
 				for (c <- children) print(c, indention + 1)
