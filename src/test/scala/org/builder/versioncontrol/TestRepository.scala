@@ -27,6 +27,8 @@ class TestRepository(baseDir: File, name: String) {
 		this
 	}
 	
+	def hasChanges() = vc.hasChanges()
+	
 	def clone(dir: File): TestRepository = {
 	  vc.clone(dir.getCanonicalPath())
 	  this

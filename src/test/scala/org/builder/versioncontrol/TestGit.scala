@@ -38,6 +38,13 @@ class TestGit {
     assertEquals(lastCommitOnOrigin, repo1.getLastCommitAtOriginMaster())
   }
   
+  @Test
+  def hasChanges() {
+    assertFalse(repo1.hasChanges())
+    repo1.createNewFile("newFile.txt", "i am new", true)
+    assertTrue(repo1.hasChanges())
+  }
+  
   
   @Test
   def createPatch() {

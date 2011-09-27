@@ -13,6 +13,7 @@ abstract class VersionControl {
   def commit(message: String)
   def checkout(revision: String)
   def apply(patchFile: File);
+  def hasChanges(): Boolean
 }
 
 case class Patch(diff: String, revision: String)

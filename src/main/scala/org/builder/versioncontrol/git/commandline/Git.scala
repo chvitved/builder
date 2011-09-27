@@ -63,6 +63,12 @@ class Git(directory: File) extends VersionControl{
     GitCommand.execute(command)
   }
   
+  override def hasChanges(): Boolean = {
+  	val command = "git status"
+  	val output = GitCommand.execute(command)
+  	!output.contains("no changes added to commit")
+  }
+  
   private def checkFilePath(file: java.io.File): Unit = {
     if (!file.getParentFile().getCanonicalFile().toString().contains(dir.getCanonicalFile().toString())) {
       throw new RuntimeException(String.format("the file %s is not in the directory %s", file, dir))
