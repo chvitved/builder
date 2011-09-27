@@ -66,7 +66,7 @@ class Git(directory: File) extends VersionControl{
   override def hasChanges(): Boolean = {
   	val command = "git status"
   	val output = GitCommand.execute(command)
-  	!output.contains("no changes added to commit")
+  	!output.contains("nothing to commit")
   }
   
   private def checkFilePath(file: java.io.File): Unit = {

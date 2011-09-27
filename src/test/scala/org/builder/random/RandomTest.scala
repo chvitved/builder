@@ -44,38 +44,40 @@ object RandomTest extends Properties("files") {
 	
 	var counter = 0;
 	property("tree") =  Prop.forAll((tuple: (FileTree, Seq[Change])) => {
-		val files = tuple._1
-		println("files:")
-		FileTree.print(tuple._1, 0)
-		println("change")
-		for(c <- tuple._2) println(c)
-		println("-------------")
-		
-		
-		val rootVc = new Git(origin)
-		
-		org.apache.commons.io.FileUtils.forceMkdir(origin)
-		rootVc.init()
-		createFiles(files, rootVc)
-		rootVc.commit("committet all files")
-		
-		org.apache.commons.io.FileUtils.forceMkdir(repo1)
-		
-		val repo1Vc = new Git(repo1)
-		repo1Vc.clone(origin.getCanonicalPath())
-		createChanges(tuple._2, repo1Vc)
-		
-		
-		counter += 1
-		println(counter)
-
-		
-		
-		removeFiles();
-		println()
-		true
-		
-		
+		try {
+			val files = tuple._1
+			val changes = tuple._2.reverse
+			println("files:")
+			FileTree.print(tuple._1, 0)
+			println("change")
+			for(c <- tuple._2) println(c)
+			println("-------------")
+			
+			
+			val rootVc = new Git(origin)
+			
+			org.apache.commons.io.FileUtils.forceMkdir(origin)
+			rootVc.init()
+			createFiles(files, rootVc)
+			if (rootVc.hasChanges()) {
+				rootVc.commit("committet all files")
+			}
+			
+			
+			org.apache.commons.io.FileUtils.forceMkdir(repo1)
+			
+			val repo1Vc = new Git(repo1)
+			repo1Vc.clone(origin.getCanonicalPath())
+			createChanges(changes, repo1Vc)
+			
+			
+			counter += 1
+			println(counter)
+			println()
+			true
+		} finally {
+			removeFiles();
+		}
 	})
 	
 	private def createChanges(changes: Seq[Change], vc: VersionControl) {
