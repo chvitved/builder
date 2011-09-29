@@ -53,8 +53,18 @@ class Git(directory: File) extends VersionControl{
   
   override def remove(file: File) {
     checkFilePath(file)
-    val command = "git rm " + file.getCanonicalPath()
-    GitCommand.execute(command)
+    
+    val command = 
+    	if (file.isDirectory()) {
+    		if (!file.list().isEmpty) {
+    			"git rm -r " + file.getCanonicalPath()
+    		} else null
+    	} else {
+    		"git rm " + file.getCanonicalPath()
+    	}
+    if (command != null) {
+    	GitCommand.execute(command)    	
+    }
   }
   
   override def apply(patchFile: File) {
@@ -70,7 +80,8 @@ class Git(directory: File) extends VersionControl{
   }
   
   private def checkFilePath(file: java.io.File): Unit = {
-    if (!file.getParentFile().getCanonicalFile().toString().contains(dir.getCanonicalFile().toString())) {
+  	
+    if (!file.getCanonicalFile().getParentFile().getCanonicalFile().toString().contains(dir.getCanonicalFile().toString())) {
       throw new RuntimeException(String.format("the file %s is not in the directory %s", file, dir))
     }
   }

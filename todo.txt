@@ -2,3 +2,5 @@ Random test generere altid en rod mappe i randomtests/origin.
 Der skal genereres tilfældige mapper og filer også helt ude i roden på origin mappen
 
 check at git båder adder file som binære file og text filer - git kender vist ikke forskel
+
+fjerne file.getCanonicalpath. Eller gør det på densamme måde alle steder

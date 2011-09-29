@@ -14,8 +14,8 @@ object Generators {
 		str <- Gen.containerOfN[List, Char](size, Gen.alphaChar) map (_.mkString)
 	} yield str
 	
-	val genTextFileSize = Gen.choose(0, 50 * 1024) map (Text(_))
-	val genBinaryFileSize = Gen.choose(0, 20 * 1024 * 1024) map (Binary(_))
+	val genTextFileSize = Gen.choose(0, 10 * 1024) map (Text(_))
+	val genBinaryFileSize = Gen.choose(0, 2 * 1024 * 1024) map (Binary(_))
 	val genByte = Gen.choose(Byte.MinValue, Byte.MaxValue)
 	
 	def genTextByte : Gen[Byte] = Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE) suchThat ((c) => 
@@ -85,8 +85,8 @@ object Generators {
 			tree <- genDir(Random.nextInt(5))
 			fileTuple <- tree.getFiles
 		} yield fileTuple match {
-			case (file, null) => AddDir(file)
-			case (file, fileType) => AddFile(file, fileType)
+			case (file, null) => AddDir(new File(parentPath.getCanonicalPath(),file.getName()))
+			case (file, fileType) => AddFile(new File(parentPath.getCanonicalPath(),file.getName), fileType)
 		}
 	}
 	
@@ -143,9 +143,9 @@ object Generators {
 	
 	
 	
-	val genFilesWithChanges : Gen[(FileTree, Seq[Change])] = for {
+	def genFilesWithChanges(implicit dir: File) : Gen[(FileTree, Seq[Change])] = for {
 		ft <- genFileTree
-		filetreeWithChanges <- genChange(ft, null)
+		filetreeWithChanges <- genChange(ft, dir.getCanonicalFile())
 	} yield (ft, filetreeWithChanges)
 		
 }

@@ -18,7 +18,7 @@ object RandomTest extends Properties("files") {
 	val repo1 = new File(testDir + File.separator + "repo1")
 	
 	implicit def arbFileTree: Arbitrary[FileTree] = Arbitrary(Generators.genFileTree)
-	implicit def fileswithChanges: Arbitrary[(FileTree, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges)
+	implicit def fileswithChanges: Arbitrary[(FileTree, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges(repo1))
 
 //	property("tree") =  Prop.forAll((files: FileTree) => {
 //		org.apache.commons.io.FileUtils.forceMkdir(origin)
@@ -72,7 +72,7 @@ object RandomTest extends Properties("files") {
 			
 			
 			counter += 1
-			println(counter)
+			println("test number " + counter)
 			println()
 			true
 		} finally {
@@ -82,17 +82,19 @@ object RandomTest extends Properties("files") {
 	
 	private def createChanges(changes: Seq[Change], vc: VersionControl) {
 		for (c <- changes) {
+			println("change " + c)
 			c match {
 				case AddFile(file, fileType) => {
 					writeFileData(file.getName(), fileType, file.getParent(), vc)
 				}
 				case AddDir(file) => {
 					org.apache.commons.io.FileUtils.forceMkdir(file)
-					vc.add(file)
 				}
 				case Remove(file) => {
+					if (!(file.isDirectory() && file.list().isEmpty)) {
+						vc.remove(file)						
+					}
 					FileUtils.deleteFile(file)
-					vc.remove(file)
 				}
 				case Edit(file, changes) => {
 					//TODO
@@ -100,7 +102,6 @@ object RandomTest extends Properties("files") {
 				case Move(src, dst) => {
 					//TODO
 				}
-				
 			}
 		}
 	}

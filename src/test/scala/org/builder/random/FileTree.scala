@@ -39,7 +39,7 @@ abstract sealed class FileTree(name: String){
 				}
 			}
 		}
-		doGet(this, new File(""), Seq())
+		doGet(this, new File(".").getCanonicalFile(), Seq())
 	}
 }
 
