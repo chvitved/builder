@@ -15,11 +15,11 @@ class Git(directory: File) extends VersionControl{
   }
   
   override def getLastCommitIdAtOriginMaster(): String = {
-    getLatestRevision("origin/master")
+    getLatestRevision("origin/HEAD")
   }
   
   def getLatestRevision(branch: String): String = {
-    val command = "git rev-parse " + branch
+    val command = "git rev-list " + branch
     GitCommand.execute(command)
   }
   
@@ -30,9 +30,14 @@ class Git(directory: File) extends VersionControl{
     Patch(diff, id)
   }
   
+  override def move(src: File, dest: File) {
+  	val command = String.format("git mv %s %s", src, dest)
+    GitCommand.execute(command)
+  }
+  
   override def init() {
     val command = "git init"
-    val output = GitCommand.execute(command)
+    GitCommand.execute(command)
   }
   
   override def clone(directory: String) {

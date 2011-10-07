@@ -20,9 +20,13 @@ class Client(dir: File, server: ServerApi) {
 	}
 	
 	def applyPatch(buildId: String) {
+		applyPatch(buildId, null)
+	}
+	
+	def applyPatch(buildId: String, repoUrl: String) {
 		val revision = BuildId.getRevisionFromId(buildId)			
 		val vc = new Git(dir)
-		//vc.clone(gitProjectUrl)
+		if (repoUrl != null) vc.clone(repoUrl)
 		vc.checkout(revision)
 		val patchFile =  new File(dir, buildId + ".patch")
 		server.fetchToFile(buildId,patchFile)

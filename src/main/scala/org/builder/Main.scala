@@ -6,6 +6,7 @@ import org.builder.client.Client
 import java.io.File
 import java.io.FileReader
 import org.builder.util.Properties
+import org.builder.versioncontrol.git.commandline.Git
 
 
 object Main {
@@ -27,7 +28,12 @@ object Main {
 				new Client(dir, server).applyPatch(args(1))
 			} else if ("fetchfile".equals(args(0))) {
 				server.fetchToFile(args(1), new File("/tmp/" + System.currentTimeMillis()))
-		}
+			} else if ("patch"equals(args(0))) {
+				val vc = new Git(dir)
+				val p = vc.createPatch()
+				println(p.diff)
+				
+			}
 		}
 	}
 }

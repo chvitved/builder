@@ -10,16 +10,30 @@ object Generators {
 
 	//val genNames = Gen.alphaStr suchThat (c => c.length > 2 && c.length < 50 )
 	val genNames = for{
-		size <- Gen.choose(1,50);
+		size <- Gen.choose(1,20);
 		str <- Gen.containerOfN[List, Char](size, Gen.alphaChar) map (_.mkString)
 	} yield str
 	
 	val genTextFileSize = Gen.choose(0, 10 * 1024) map (Text(_))
 	val genBinaryFileSize = Gen.choose(0, 2 * 1024 * 1024) map (Binary(_))
-	val genByte = Gen.choose(Byte.MinValue, Byte.MaxValue)
+	def genBytes(size: Int) = Gen.containerOfN[Array, Byte](size, Gen.choose(Byte.MinValue, Byte.MaxValue))
 	
-	def genTextByte : Gen[Byte] = Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE) suchThat ((c) => 
-		Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)) map (_.getNumericValue.toByte)
+	def genUTFStr(size: Int) : Gen[String] =
+			Gen.containerOfN[List,Char](size, Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE)) map {_.filter{c=>Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)}.mkString}
+	
+	def genChars: Gen[Char] = Gen.frequency(
+			(1,Gen.choose(Character.MIN_VALUE,Character.MAX_VALUE)), 
+			(1, Gen.value('\n')),
+			(2, Gen.value(' ')),
+			(16, Gen.alphaChar)
+			
+		)
+	
+	def genText(size: Int) : Gen[String] =
+			Gen.containerOfN[List,Char](size, genChars) map {_.filter{c=>Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)}.mkString}
+	
+	// we ignore some utf chars are longer than a byte
+	def genTextBytes(size: Int): Gen[Array[Byte]] = genText(size) map (str => str.getBytes("UTF-8"))
 	
 	val genFile: Gen[FileLeaf]= for{
 		name <- genNames
@@ -126,9 +140,10 @@ object Generators {
 			if (fileSize) > 0
 			position = Random.nextInt(fileSize)
 			length = Random.nextInt(fileSize - position)
+			if (length > 0)
 		} yield AFileChange(position, length)
 		
-		Gen.value(Edit(new File(parentPath, file.name), changes))
+		Gen.value(Edit(new File(parentPath, file.name), file.fileType, changes))
 	}
 	
 	def genDeleteFile(file: FileLeaf, parentPath: File): Gen[Change] = {

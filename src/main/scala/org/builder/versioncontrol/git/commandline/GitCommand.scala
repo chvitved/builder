@@ -17,11 +17,15 @@ object GitCommand {
     
     def stdOut(str: String) = {
       System.out.println(str)
-      output.append(str + "\n")
+      val bytes = str.getBytes()
+      str.getBytes()
+      output.append(new String(bytes, "UTF-8") + "\n")
     }
     def stdErr(str: String) = {
       System.err.println(str)
-      error.append(str + "\n")
+      val bytes = str.getBytes()
+      str.getBytes()
+      output.append(new String(bytes, "UTF-8") + "\n")
     }
     
     val exitCode = try {

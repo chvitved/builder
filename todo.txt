@@ -4,3 +4,5 @@ Der skal genereres tilfældige mapper og filer også helt ude i roden på origin
 check at git båder adder file som binære file og text filer - git kender vist ikke forskel
 
 fjerne file.getCanonicalpath. Eller gør det på densamme måde alle steder
+
+genTextByte returnere en masse -1

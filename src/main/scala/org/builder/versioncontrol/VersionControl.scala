@@ -9,6 +9,7 @@ abstract class VersionControl {
   def init()
   def clone(repo: String)
   def add(file: File)
+  def move(src: File, dest: File)
   def remove(file: File)
   def commit(message: String)
   def checkout(revision: String)

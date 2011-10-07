@@ -10,6 +10,10 @@ import java.io.BufferedOutputStream
 	import org.scalacheck.Properties
 	import org.scalacheck.Prop
 	import org.builder.versioncontrol.VersionControl
+	import org.builder.client.Client
+	import org.builder.server.api.ServerApi
+	import org.builder.server.impl.Server
+	import org.builder.buildserver.BuildServerStub
 
 object RandomTest extends Properties("files") {
 	
@@ -17,31 +21,15 @@ object RandomTest extends Properties("files") {
 	val origin = new File(testDir + File.separator + "origin")
 	val repo1 = new File(testDir + File.separator + "repo1")
 	
+	val serverUrl = "http://localhost:7000"
+	val buildserverDir = new File(testDir + File.separator + "buildserver")
+	val buildServerStub = new BuildServerStub(buildserverDir, origin.getCanonicalPath(), serverUrl)
+	Server.start(buildServerStub)
+	
+	
 	implicit def arbFileTree: Arbitrary[FileTree] = Arbitrary(Generators.genFileTree)
 	implicit def fileswithChanges: Arbitrary[(FileTree, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges(repo1))
 
-//	property("tree") =  Prop.forAll((files: FileTree) => {
-//		org.apache.commons.io.FileUtils.forceMkdir(origin)
-//		
-//		vc.init()
-//		createFiles(files)
-//		vc.commit("committet all files")
-//		
-//		org.apache.commons.io.FileUtils.forceMkdir(repo1)
-//		
-//		val repo1Vc = new Git(repo1)
-//		repo1Vc.clone(origin.getCanonicalPath())
-//		
-//		
-//		counter += 1
-//		println(counter)
-//
-//		
-//		
-//		removeFiles();
-//		true
-//	})
-	
 	var counter = 0;
 	property("tree") =  Prop.forAll((tuple: (FileTree, Seq[Change])) => {
 		try {
@@ -63,14 +51,17 @@ object RandomTest extends Properties("files") {
 				rootVc.commit("committet all files")
 			}
 			
-			
 			org.apache.commons.io.FileUtils.forceMkdir(repo1)
 			
 			val repo1Vc = new Git(repo1)
 			repo1Vc.clone(origin.getCanonicalPath())
 			createChanges(changes, repo1Vc)
-			
-			
+			if (!changes.isEmpty) {
+				repo1Vc.commit("committing changes")
+				org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)
+				val client = new Client(repo1, new ServerApi(serverUrl))
+				client.build("test")
+			}
 			counter += 1
 			println("test number " + counter)
 			println()
@@ -94,16 +85,39 @@ object RandomTest extends Properties("files") {
 					if (!(file.isDirectory() && file.list().isEmpty)) {
 						vc.remove(file)						
 					}
-					FileUtils.deleteFile(file)
 				}
-				case Edit(file, changes) => {
-					//TODO
+				case Edit(file, fileType, changes) => {
+					editFile(file, fileType, changes)
+					vc.add(file)
 				}
-				case Move(src, dst) => {
-					//TODO
+				case Move(src, dest) => {
+					vc.move(src, dest)
 				}
 			}
 		}
+	}
+	
+	private def editFile(file: File, fileType: FileType, changes: Seq[AFileChange]) {
+		val bytes = org.apache.commons.io.FileUtils.readFileToByteArray(file)
+		for(AFileChange(position, length) <- changes){
+			val newBytes: Gen[Array[Byte]] = 
+				fileType match {
+					case Binary(_) =>  Generators.genBytes(length)
+					case Text(_) =>  Generators.genTextBytes(length)
+				}
+			
+			for{
+				index <- 0 until length
+				nb <- newBytes.sample
+			} {
+				val p = position + index
+				if (p < bytes.size)
+					bytes(p) = nb(index)
+			}
+		}
+		val fos = new FileOutputStream(file)
+		fos.write(bytes)
+		fos.close
 	}
 	
 	
@@ -132,22 +146,21 @@ object RandomTest extends Properties("files") {
 	private def writeFileData(name: String, fileType: FileType, parentPath: String, vc: VersionControl) {
 	  fileType match {
 	  	case Binary(size) => {
-	  		writeBytes(name, parentPath, size, Generators.genByte, vc)
+	  		writeBytes(name, parentPath, Generators.genBytes(size), vc)
 	  	}
 	  	case Text(size) => {
-	  		writeBytes(name, parentPath, size, Generators.genTextByte, vc)
+	  		writeBytes(name, parentPath, Generators.genTextBytes(size), vc) 
 	  	}
 	  }
 	}
 	
-	private def writeBytes(name: String, parentPath: String, size: Int, byteGenerator: Gen[Byte], vc: VersionControl) {
+	private def writeBytes(name: String, parentPath: String, byteGenerator: Gen[Array[Byte]], vc: VersionControl) {
 		val f = new File(parentPath, name)
 		f.createNewFile();
 		val fw = new BufferedOutputStream(new FileOutputStream(f))
-		for (
-	  		i <- 0 until size;
-	  		byte <- byteGenerator.sample
-	  	)  fw.write(byte)
+		for {
+	  		bytes <- byteGenerator.sample
+		}  fw.write(bytes)
 	  	fw.close
 	  	vc.add(f)
 	}
