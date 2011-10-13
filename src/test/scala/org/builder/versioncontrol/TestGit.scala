@@ -23,6 +23,19 @@ class TestGit extends ReposTest{
     assertTrue(repo1.hasChanges())
   }
   
+  @Test
+  def untrackedFiles() {
+    assertTrue(repo1.untrackedFiles.isEmpty)
+    repo1.createNewFile("newFile.txt", "i am new", true)
+    assertTrue(repo1.untrackedFiles.isEmpty)
+    val untrackedFile = "newUntrackedFile.txt"
+    repo1.createNewFile(untrackedFile, "i am untracked", false)
+    assertEquals(List(untrackedFile), repo1.untrackedFiles)
+    val untrackedFile2 = "newUntrackedFile2.txt"
+    repo1.createNewFile(untrackedFile2, "i am also untracked", false)
+    assertEquals(List(untrackedFile, untrackedFile2), repo1.untrackedFiles)
+  }
+  
   
   @Test
   def createPatch() {

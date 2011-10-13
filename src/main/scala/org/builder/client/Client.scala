@@ -10,6 +10,7 @@ class Client(dir: File, server: ServerApi) {
 	val vc = new Git(dir)
 	
 	def build(projectName: String): Boolean = {
+		checkForUntrackedFiles()
 		val patchFile = new File(dir, "builder-patch.txt")
 		try {
 			val patch = vc.createPatch(patchFile)
@@ -51,5 +52,8 @@ class Client(dir: File, server: ServerApi) {
 		}
 	}
 
+	private def checkForUntrackedFiles() {
+		continue here
+	}
 
 }

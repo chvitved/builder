@@ -22,7 +22,7 @@ class Git(directory: File) extends VersionControl{
   }
   
   def getLatestRevision(branch: String): String = {
-    val command = "git rev-list " + branch
+    val command = "git rev-parse " + branch
     GitCommand.execute(command)
   }
   
@@ -82,9 +82,15 @@ class Git(directory: File) extends VersionControl{
   }
   
   override def hasChanges(): Boolean = {
-  	val command = "git status"
+  	val command = "git status "
   	val output = GitCommand.execute(command)
   	!output.contains("nothing to commit")
+  }
+  
+  def untrackedFiles(): Seq[String] = {
+  	val command = "git status --porcelain"
+  	val output = GitCommand.execute(command)
+  	output.split("\n").filter(_.startsWith("??")).map(_.replace("?? ", ""))
   }
   
   private def checkFilePath(file: java.io.File): Unit = {

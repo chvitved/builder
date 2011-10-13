@@ -15,6 +15,7 @@ abstract class VersionControl {
   def checkout(revision: String)
   def apply(patchFile: File);
   def hasChanges(): Boolean
+  def untrackedFiles(): Seq[String]
 }
 
 case class Patch(diffFile: File, revision: String)

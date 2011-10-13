@@ -29,6 +29,8 @@ class TestRepository(baseDir: File, name: String) {
 	
 	def hasChanges() = vc.hasChanges()
 	
+	def untrackedFiles() = vc.untrackedFiles()
+	
 	def clone(dir: File): TestRepository = {
 	  vc.clone(dir.getCanonicalPath())
 	  this
