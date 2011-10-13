@@ -38,8 +38,8 @@ class TestRepository(baseDir: File, name: String) {
 	  vc.commit(msg)
 	}
 	
-	def createPatch(): Patch = {
-	  vc.createPatch()
+	def createPatch(file: File): Patch = {
+	  vc.createPatch(file)
 	}
 	
 	def applyPatch(f: File) {

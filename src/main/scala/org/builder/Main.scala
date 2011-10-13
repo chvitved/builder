@@ -7,6 +7,7 @@ import java.io.File
 import java.io.FileReader
 import org.builder.util.Properties
 import org.builder.versioncontrol.git.commandline.Git
+import org.apache.commons.io.FileUtils
 
 
 object Main {
@@ -30,9 +31,8 @@ object Main {
 				server.fetchToFile(args(1), new File("/tmp/" + System.currentTimeMillis()))
 			} else if ("patch"equals(args(0))) {
 				val vc = new Git(dir)
-				val p = vc.createPatch()
-				println(p.diff)
-				
+				val p = vc.createPatch(new File(dir, "builder-patch"))
+				println(FileUtils.readFileToString(p.diffFile))
 			}
 		}
 	}

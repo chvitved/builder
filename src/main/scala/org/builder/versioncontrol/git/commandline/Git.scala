@@ -4,7 +4,10 @@ import org.builder.versioncontrol.VersionControl
 import scala.sys.process.Process
 import java.io.File
 import org.builder.versioncontrol.Patch
-
+import org.apache.commons.io.FileUtils
+import scala.sys.process.Process
+import java.io.ByteArrayOutputStream
+	
 class Git(directory: File) extends VersionControl{
 
   implicit val dir = directory
@@ -15,7 +18,7 @@ class Git(directory: File) extends VersionControl{
   }
   
   override def getLastCommitIdAtOriginMaster(): String = {
-    getLatestRevision("origin/HEAD")
+    getLatestRevision("origin/master")
   }
   
   def getLatestRevision(branch: String): String = {
@@ -23,11 +26,12 @@ class Git(directory: File) extends VersionControl{
     GitCommand.execute(command)
   }
   
-  override def createPatch(): Patch = {
+  override def createPatch(f: File): Patch = {
     val id = getLastCommitIdAtOriginMaster()
-    val command = String.format("git format-patch %s --stdout", id)
-    val diff = GitCommand.execute(command)
-    Patch(diff, id)
+    val command = String.format("git diff --binary %s ", id)
+    GitCommand.execute(command, f)
+    Patch(f, id)
+    
   }
   
   override def move(src: File, dest: File) {
@@ -73,8 +77,7 @@ class Git(directory: File) extends VersionControl{
   }
   
   override def apply(patchFile: File) {
-  	checkFilePath(patchFile)
-    val command = "git apply " + patchFile.getName()
+    val command = "git apply " + patchFile.getCanonicalPath() + " --binary"
     GitCommand.execute(command)
   }
   

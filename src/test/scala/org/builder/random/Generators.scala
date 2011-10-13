@@ -61,7 +61,7 @@ object Generators {
 		doGenDir()
 	}
 
-	val genFileTree: Gen[FileTree] = Gen.sized(sz => genDir(sz))
+	val genFileTree: Gen[FileTree] = Gen.sized(sz => genDir(sz)) suchThat(!_.getFiles.isEmpty)
 	
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
 		fileTree match {

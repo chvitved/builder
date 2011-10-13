@@ -14,6 +14,7 @@ import java.io.BufferedOutputStream
 	import org.builder.server.api.ServerApi
 	import org.builder.server.impl.Server
 	import org.builder.buildserver.BuildServerStub
+	import java.util.Arrays
 
 object RandomTest extends Properties("files") {
 	
@@ -32,6 +33,9 @@ object RandomTest extends Properties("files") {
 
 	var counter = 0;
 	property("tree") =  Prop.forAll((tuple: (FileTree, Seq[Change])) => {
+			println()
+			counter += 1
+			println("test number " + counter)
 		try {
 			val files = tuple._1
 			val changes = tuple._2.reverse
@@ -61,16 +65,15 @@ object RandomTest extends Properties("files") {
 				org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)
 				val client = new Client(repo1, new ServerApi(serverUrl))
 				client.build("test")
+				FileUtils.compareFiles(buildserverDir, repo1)
+			} else {
+				true				
 			}
-			counter += 1
-			println("test number " + counter)
-			println()
-			true
 		} finally {
 			removeFiles();
 		}
 	})
-	
+
 	private def createChanges(changes: Seq[Change], vc: VersionControl) {
 		for (c <- changes) {
 			println("change " + c)

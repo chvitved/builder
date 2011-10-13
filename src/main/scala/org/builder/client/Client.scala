@@ -9,14 +9,27 @@ class Client(dir: File, server: ServerApi) {
 	
 	val vc = new Git(dir)
 	
-	def build(projectName: String) {
-		val patch = vc.createPatch()
-		val buildResource = server.send(patch, projectName)
-		val pattern = Pattern.compile(".*\\?buildid=(.*+)")
-		val matcher = pattern.matcher(buildResource)
-		matcher.matches()
-		val buildId = matcher.group(1)
-		println(String.format("Successfully send build request with the id %s. Follow it at %s",buildId, buildResource))			
+	def build(projectName: String): Boolean = {
+		val patchFile = new File(dir, "builder-patch.txt")
+		try {
+			val patch = vc.createPatch(patchFile)
+			if (patchFile.length() == 0) {
+				println("No changes found...")
+				false
+			} else {
+				val buildResource = server.send(patch, projectName)
+				val pattern = Pattern.compile(".*\\?buildid=(.*+)")
+				val matcher = pattern.matcher(buildResource)
+				matcher.matches()
+				val buildId = matcher.group(1)
+				println(String.format("Successfully send build request with the id %s. Follow it at %s",buildId, buildResource))
+				true
+			}
+		} finally {
+			 if (patchFile.exists()) {
+				 patchFile.delete();
+			 }
+		}
 	}
 	
 	def applyPatch(buildId: String) {
@@ -28,9 +41,14 @@ class Client(dir: File, server: ServerApi) {
 		val vc = new Git(dir)
 		if (repoUrl != null) vc.clone(repoUrl)
 		vc.checkout(revision)
-		val patchFile =  new File(dir, buildId + ".patch")
-		server.fetchToFile(buildId,patchFile)
-		vc.apply(patchFile)
+		var patchFile: File = null
+		try {
+			patchFile =  new File(dir, buildId + ".patch")
+			server.fetchToFile(buildId,patchFile)
+			vc.apply(patchFile)
+		} finally {
+			if (patchFile != null) patchFile.delete()
+		}
 	}
 
 

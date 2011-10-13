@@ -4,16 +4,16 @@ import org.junit._
 import Assert._
 import java.io.File
 import org.builder.versioncontrol.git.commandline.GitCommand.GitCommandException
-import org.builder.versioncontrol.git.commandline.GitCommand.GitCommandNonZeroExitCodeException
 import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util.Arrays
+import org.builder.versioncontrol.git.commandline.GitCommand.CommandNonZeroExitCodeException
 
 class GitCommandTest {
   
   implicit val dir = new File(".")
 
   @Test
-  def exception() {
+  def wrongCommand() {
     try {
     	GitCommand.execute("wrongCommand")
     	fail()
@@ -29,7 +29,7 @@ class GitCommandTest {
     	GitCommand.execute("git hello world")
     	fail()
     } catch {
-      case ex: GitCommandNonZeroExitCodeException => //assertion true
+      case ex: CommandNonZeroExitCodeException => //assertion true
       case ex: Exception => fail()
     }
   }
@@ -39,7 +39,7 @@ class GitCommandTest {
     val baos = new ByteArrayOutputStream()
     System.setOut(new PrintStream(baos))
     val output = GitCommand.execute("git --help")
-    assertEquals(output, new String(baos.toByteArray()))
+    assertTrue(new String(baos.toByteArray()).contains(output))
   }
   
   @Test
@@ -50,7 +50,7 @@ class GitCommandTest {
     try {
     	GitCommand.execute("git")
     }catch {
-    	case ex: GitCommandNonZeroExitCodeException => 
+    	case ex: CommandNonZeroExitCodeException => 
     	  assertEquals(ex.error, new String(baos.toByteArray()))
     	case ex: Exception => fail()
     }

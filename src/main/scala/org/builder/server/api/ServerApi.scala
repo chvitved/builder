@@ -9,24 +9,41 @@ import org.builder.versioncontrol.Patch
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.GZIPInputStream
+import java.io.FileInputStream
+import java.io.OutputStream
+import java.io.InputStream
 
 class ServerApi(serverUrl: String) {
 	
 	def send(patch: Patch, projectName: String): String = {
-		val url = new URL(String.format("%s/build/?project=%s&revision=%s",serverUrl, projectName, patch.revision))
-		val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
-		connection.setDoOutput(true)
-		connection.setRequestProperty("Content-Type", "application/x-gzip")
-		val gzipOutputStream = new GZIPOutputStream(new BufferedOutputStream(connection.getOutputStream()))
-		gzipOutputStream.write(patch.diff.getBytes("UTF-8"))
-		gzipOutputStream.close()
-		val statusCode = connection.getResponseCode()
-		if (statusCode != 201) {
-			val response = IOUtils.toString(connection.getErrorStream())
-			throw new RuntimeException(String.format("Error when sending patch to server. \nurl:%s responded with %s %s\nbody:\n%s", url.toString(), ""+statusCode, connection.getResponseMessage(), response))
-		} else {
-			connection.getHeaderField("Location")
+		var in : InputStream = null
+		var out: OutputStream =  null
+		try {
+			val url = new URL(String.format("%s/build/?project=%s&revision=%s",serverUrl, projectName, patch.revision))
+			val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
+			connection.setDoOutput(true)
+			connection.setRequestProperty("Content-Type", "application/x-gzip")
+			out = new GZIPOutputStream(new BufferedOutputStream(connection.getOutputStream()))
+			in = new FileInputStream(patch.diffFile)
+			IOUtils.copy(in, out)
+			out.close();
+			in.close();
+			val statusCode = connection.getResponseCode()
+			if (statusCode != 201) {
+				val response = IOUtils.toString(connection.getErrorStream())
+				throw new RuntimeException(String.format("Error when sending patch to server. \nurl:%s responded with %s %s\nbody:\n%s", url.toString(), ""+statusCode, connection.getResponseMessage(), response))
+			} else {
+				connection.getHeaderField("Location")
+			} 
+		} finally {
+			if (in != null) {
+				in.close;				
+			}
+			if (out != null) {
+				out.close
+			}
 		}
+		
 	}
 	
 	def fetchToFile(buildId: String, file: File) {

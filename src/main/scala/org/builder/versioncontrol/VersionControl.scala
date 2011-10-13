@@ -3,7 +3,7 @@ import java.io.File
 
 abstract class VersionControl {
 
-  def createPatch() : Patch
+  def createPatch(file: File) : Patch
   def getLastCommitIdAtOriginMaster(): String
   def getLatestRevision(branch: String): String
   def init()
@@ -17,4 +17,4 @@ abstract class VersionControl {
   def hasChanges(): Boolean
 }
 
-case class Patch(diff: String, revision: String)
+case class Patch(diffFile: File, revision: String)
