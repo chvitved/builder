@@ -1,0 +1,42 @@
+package org.builder.client
+import java.util.Scanner
+
+class CommandLine {
+  
+  def yesNo(output: String) : Boolean = {
+    println(output)
+    println("answer y/n")
+    val scanner = new Scanner(System.in)
+    var res = false
+    var gotAnswer = false
+    while(!gotAnswer) {
+    	getAnswer(scanner) match {
+    	  case Ok(result) => {
+    		  res = result
+    		  gotAnswer = true
+    		}
+    	  case NotUnderstood() => {
+    	    gotAnswer = false
+    	    println("Could not understand your answer try again")
+    	  }
+    	}
+    }
+    res
+  }
+  
+  abstract sealed case class Answer
+  case class Ok(res: Boolean) extends Answer
+  case class NotUnderstood() extends Answer
+  
+  private def getAnswer(scanner: Scanner): Answer = {
+    val answer = scanner.nextLine().trim;
+    if (answer == "y" || answer == "Y") {
+      Ok(true)
+    } else if (answer == "n" || answer == "N") {
+      Ok(false)
+    } else {
+      NotUnderstood() 
+    }
+  }
+
+}

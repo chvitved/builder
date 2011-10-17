@@ -4,13 +4,16 @@ import org.builder.versioncontrol.git.commandline.Git
 import org.builder.server.api.ServerApi
 import java.util.regex.Pattern
 import org.builder. util.BuildId
+import org.builder.versioncontrol.VersionControl
 
 class Client(dir: File, server: ServerApi) {
 	
-	val vc = new Git(dir)
+	val vc: VersionControl = new Git(dir)
 	
 	def build(projectName: String): Boolean = {
-		checkForUntrackedFiles()
+	  	if (!checkForUntrackedFiles()) {
+	  	  return false
+	  	}
 		val patchFile = new File(dir, "builder-patch.txt")
 		try {
 			val patch = vc.createPatch(patchFile)
@@ -52,8 +55,11 @@ class Client(dir: File, server: ServerApi) {
 		}
 	}
 
-	private def checkForUntrackedFiles() {
-		continue here
+	def checkForUntrackedFiles(): Boolean =  {
+	  val q = "There are files that are not tracked by your version control. These files will not be send to the build server. Continue?"
+	  if (!vc.untrackedFiles().isEmpty && !new CommandLine().yesNo(q)) {
+	    false;
+	  } else true
 	}
 
 }

@@ -2,7 +2,7 @@ git diff
 git apply
 		Fix midlertidig kode
 
-
+edits skal også kunne gøre filer større eller mindre
 Random test generere altid en rod mappe i randomtests/origin. 
 Der skal genereres tilf√¶ldige mapper og filer ogs√• helt ude i roden p√• origin mappen
 
