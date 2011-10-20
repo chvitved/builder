@@ -3,6 +3,7 @@ import java.io.File
 
 abstract class VersionControl {
 
+  def dir : File
   def createPatch(file: File) : Patch
   def getLastCommitIdAtOriginMaster(): String
   def getLatestRevision(branch: String): String

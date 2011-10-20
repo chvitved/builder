@@ -14,7 +14,11 @@ object GitCommand {
   def execute(command: String, file: File)( implicit dir: File) {
    println(command)
    val pb = Process(command, dir) #> file
-   pb !	    
+   val exitValue = pb !	 
+
+   if (exitValue != 0) {
+    	throw new CommandNonZeroExitCodeException(command, exitValue, "output was send to a patch file", "", dir)
+   }
   }
     
   def execute(command: String)( implicit dir: File) : String = {

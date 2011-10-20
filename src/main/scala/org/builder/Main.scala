@@ -19,7 +19,6 @@ object Main {
 			val dir = new File(".")
 			val properties = new Properties(".builder-properties")
 			val serverUrl = properties.readProperty("serverurl")
-			
 			val server = new ServerApi(serverUrl)
 						
 			if ("build".equals(args(0))) {

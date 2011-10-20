@@ -2,6 +2,10 @@ package org.builder.random
 import java.io.File
 
 object FileTree {
+    def print(fileTreeRoot: FileTreeRoot) {
+      for(c <- fileTreeRoot.children) print(c, 0)
+    }
+  
 	def print(files: FileTree, indention: Int) {
 		files match {
 			case FileLeaf(name, fileType) => println(String.format("%s%s %s", indent(indention), name, fileType))
@@ -43,6 +47,10 @@ abstract sealed class FileTree(name: String){
 	}
 }
 
+case class FileTreeRoot(children: Seq[FileTree]) {
+  def size: Int = (children :\0) (_.size + _)
+  def getFiles() : Seq[(File, FileType)] = (children :\ Seq[(File, FileType)]()) ( (fileTree, seq) => fileTree.getFiles ++ seq)
+}
 case class Directory(name: String, children: Seq[FileTree]) extends FileTree(name)
 case class FileLeaf(name: String, fileType: FileType) extends FileTree(name)
 

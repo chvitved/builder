@@ -29,13 +29,13 @@ class Git(directory: File) extends VersionControl{
   override def createPatch(f: File): Patch = {
     val id = getLastCommitIdAtOriginMaster()
     val command = String.format("git diff --binary %s ", id)
-    GitCommand.execute(command, f)
+    GitCommand.execute(command, f.getCanonicalFile())
     Patch(f, id)
     
   }
   
   override def move(src: File, dest: File) {
-  	val command = String.format("git mv %s %s", src, dest)
+  	val command = String.format("git mv %s %s", src.getCanonicalFile(), dest.getCanonicalFile())
     GitCommand.execute(command)
   }
   
@@ -93,7 +93,7 @@ class Git(directory: File) extends VersionControl{
   	output.split("\n").filter(_.startsWith("??")).map(_.replace("?? ", ""))
   }
   
-  private def checkFilePath(file: java.io.File): Unit = {
+  private def checkFilePath(file: File): Unit = {
   	
     if (!file.getCanonicalFile().getParentFile().getCanonicalFile().toString().contains(dir.getCanonicalFile().toString())) {
       throw new RuntimeException(String.format("the file %s is not in the directory %s", file, dir))

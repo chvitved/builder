@@ -4,6 +4,8 @@
 /.settings
 target
 .DS_Store
+.builder-server-properties
+.cache
 lib_managed/
 src_managed/
 project/boot/
