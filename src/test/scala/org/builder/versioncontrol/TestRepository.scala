@@ -48,12 +48,8 @@ class TestRepository(baseDir: File, name: String) {
 		vc.apply(f)
 	}
 	
-	def getLastCommitAtOriginMaster(): String = {
-	  vc.getLastCommitIdAtOriginMaster()
-	}
-	
-	def getLatestRevision(branch: String): String = {
-	  vc.getLatestRevision(branch)
+	def getLastCommitAtOrigin(): String = {
+	  vc.getLastCommitIdFromOrigin()
 	}
 	
 	private def createDir(dir: File) {

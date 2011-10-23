@@ -5,8 +5,7 @@ abstract class VersionControl {
 
   def dir : File
   def createPatch(file: File) : Patch
-  def getLastCommitIdAtOriginMaster(): String
-  def getLatestRevision(branch: String): String
+  def getLastCommitIdFromOrigin(): String
   def init()
   def clone(repo: String)
   def add(file: File)

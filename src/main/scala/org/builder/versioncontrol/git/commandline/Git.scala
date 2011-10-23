@@ -1,6 +1,7 @@
 package org.builder.versioncontrol.git.commandline
 
 import org.builder.versioncontrol.VersionControl
+import org.builder.command.Command
 import scala.sys.process.Process
 import java.io.File
 import org.builder.versioncontrol.Patch
@@ -14,50 +15,50 @@ class Git(directory: File) extends VersionControl{
   
   override def commit(message: String) {
     val command = String.format("""git commit -m "%s"""", message)
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
-  override def getLastCommitIdAtOriginMaster(): String = {
+  override def getLastCommitIdFromOrigin(): String = {
     getLatestRevision("origin/master")
   }
   
-  def getLatestRevision(branch: String): String = {
+  private def getLatestRevision(branch: String): String = {
     val command = "git rev-parse " + branch
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def createPatch(f: File): Patch = {
-    val id = getLastCommitIdAtOriginMaster()
+    val id = getLastCommitIdFromOrigin()
     val command = String.format("git diff --binary %s ", id)
-    GitCommand.execute(command, f.getCanonicalFile())
+    Command.execute(command, f.getCanonicalFile())
     Patch(f, id)
     
   }
   
   override def move(src: File, dest: File) {
   	val command = String.format("git mv %s %s", src.getCanonicalFile(), dest.getCanonicalFile())
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def init() {
     val command = "git init"
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def clone(directory: String) {
     val command = "git clone " + directory + " ."
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def checkout(revision: String) {
   	val command = "git checkout " + revision 
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def add(file: File) {
     checkFilePath(file)
     val command = "git add " + file.getCanonicalPath()
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def remove(file: File) {
@@ -72,24 +73,24 @@ class Git(directory: File) extends VersionControl{
     		"git rm " + file.getCanonicalPath()
     	}
     if (command != null) {
-    	GitCommand.execute(command)    	
+    	Command.execute(command)    	
     }
   }
   
   override def apply(patchFile: File) {
     val command = "git apply " + patchFile.getCanonicalPath() + " --binary"
-    GitCommand.execute(command)
+    Command.execute(command)
   }
   
   override def hasChanges(): Boolean = {
   	val command = "git status "
-  	val output = GitCommand.execute(command)
+  	val output = Command.execute(command)
   	!output.contains("nothing to commit")
   }
   
   def untrackedFiles(): Seq[String] = {
   	val command = "git status --porcelain"
-  	val output = GitCommand.execute(command)
+  	val output = Command.execute(command)
   	output.split("\n").filter(_.startsWith("??")).map(_.replace("?? ", ""))
   }
   
