@@ -58,7 +58,7 @@ object RandomTest extends Properties("files") {
 				org.apache.commons.io.FileUtils.forceMkdir(repo1)
 
 				val repo1Vc = new Git(repo1)
-				repo1Vc.clone(origin.getCanonicalPath())
+				repo1Vc.clone(origin)
 				createChanges(changes, repo1Vc)
 				if (!changes.isEmpty) {
 					org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)

@@ -1,10 +1,12 @@
 refactor test code
 
-edits skal ogs� kunne g�re filer st�rre eller mindre
+svn angiv url for project (branch);
 
 test:
 	branches
 	other commits to origin while I change my local repo
+
+edits skal ogs� kunne g�re filer st�rre eller mindre
 
 fjerne file.getCanonicalpath. Eller gør det på densamme måde alle steder
 

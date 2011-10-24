@@ -43,7 +43,7 @@ class TestGit extends ReposTest{
   def createPatch() {
 	  repo1.editFile("file1", "test2\n")
 	  repo1.commit("changed file1")
-	  val patchFile = new File(repo1.dir, "patch")
+	  val patchFile = new File(testDir, "patch")
 	  val patch = repo1.createPatch(patchFile)
 	  val expectedDiff = 
 	  	"diff --git a/file1 b/file1\n" + 
@@ -63,9 +63,10 @@ class TestGit extends ReposTest{
   	  val newFileContent = "test2\n"
 	  repo1.editFile(fileName,newFileContent)
 	  repo1.commit("changed file1")
-	  val patchFile = new File(repo1.dir, "patch")
+	  val patchFile = new File(testDir, "patch")
 	  val patch = repo1.createPatch(patchFile)
-
+	  assertEquals(patch.revision, repo1.getLastCommitAtOrigin())
+	  
 	  val file1Before = origin.getFileAsString(fileName)
 	  assertNotSame(newFileContent, file1Before)
 	  

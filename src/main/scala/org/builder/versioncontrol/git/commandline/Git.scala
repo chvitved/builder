@@ -45,8 +45,12 @@ class Git(directory: File) extends VersionControl{
     Command.execute(command)
   }
   
-  override def clone(directory: String) {
-    val command = "git clone " + directory + " ."
+  override def clone(directory: File) {
+    clone(directory.getCanonicalPath())
+  }
+  
+  override def clone(url: String) {
+    val command = "git clone " + url + " ."
     Command.execute(command)
   }
   
