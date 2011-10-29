@@ -2,6 +2,8 @@ package org.builder.util
 import java.io.{File, FilenameFilter}
 import scala.util.Sorting
 
+import org.apache.commons.io.{FileUtils => IoFileUtils}
+
 object FileUtils {
 
 	def deleteFile(dfile : File) {
@@ -9,6 +11,10 @@ object FileUtils {
 			dfile.listFiles.foreach{f => deleteFile(f)}
 		}
 		dfile.delete
+	}
+	
+	def createDir(dir: File) {
+	  IoFileUtils.forceMkdir(dir)
 	}
 	
 	def compareFiles(f1: File, f2: File): Boolean = {

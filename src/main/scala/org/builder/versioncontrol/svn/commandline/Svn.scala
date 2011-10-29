@@ -39,7 +39,7 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   
   override def init() {
     val projectName = dir.getName()
-    val importUrl = repo.url + projectName + "/trunk"
+    val importUrl = repo.url + File.separator + projectName + "/trunk"
     val command = String.format("""svn import . %s -m "Initial import of project"""", importUrl)
     Command.execute(command)
   }

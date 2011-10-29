@@ -9,7 +9,7 @@ class TestClient extends ReposTest{
 
 	@Test
 	def untrackedFiles() {
-		val client = new Client(repo1.dir, null)
+		val client = new Client(repo1Dir, null)
 		assertTrue(client.checkForUntrackedFiles())
 		val old = System.in
 		System.setIn(new ByteArrayInputStream("n\n".getBytes()))

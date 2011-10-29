@@ -7,6 +7,7 @@ import org.junit.Assert._
 import org.junit._
 import org.builder.command.Command
 import org.builder.command.Command.CommandNonZeroExitCodeException
+import java.io.FileWriter
 
 @Test
 class TestGit extends ReposTest{
@@ -19,7 +20,7 @@ class TestGit extends ReposTest{
   }
   
   @Test
-  def hasChanges() {
+  def hasNewFilesChanges() {
     assertFalse(repo1.hasChanges())
     repo1.createNewFile("newFile.txt", "i am new", true)
     assertTrue(repo1.hasChanges())
@@ -42,7 +43,6 @@ class TestGit extends ReposTest{
   @Test
   def createPatch() {
 	  repo1.editFile("file1", "test2\n")
-	  repo1.commit("changed file1")
 	  val patchFile = new File(testDir, "patch")
 	  val patch = repo1.createPatch(patchFile)
 	  val expectedDiff = 
@@ -62,7 +62,6 @@ class TestGit extends ReposTest{
   	  val fileName = "file1"
   	  val newFileContent = "test2\n"
 	  repo1.editFile(fileName,newFileContent)
-	  repo1.commit("changed file1")
 	  val patchFile = new File(testDir, "patch")
 	  val patch = repo1.createPatch(patchFile)
 	  assertEquals(patch.revision, repo1.getLastCommitAtOrigin())
@@ -80,14 +79,14 @@ class TestGit extends ReposTest{
   
   @Test
   def applyWrongPatch() {
-  	val patchFile = repo1.createNewFile("patch.txt", "wrong patch", false)
+  	val patchFile = new File("patch.txt")
+  	new FileWriter(patchFile).write("wrong patch")
   	try {
   		origin.applyPatch(patchFile)
   	} catch {
   		case ex: CommandNonZeroExitCodeException =>
   		case ex: Exception => fail()
   	}
-  	
   }
 
 }

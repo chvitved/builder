@@ -1,3 +1,10 @@
+Problemstilling om man fanger alle ændringer i working dir
+
+test der tester om editerede filer kommer med i patchen selvom de ikke er added til vc efter de er blevet editeret
+Hvis jeg har lavet flere commit skal de tidligere også indgå i patchen
+
+
+
 refactor test code
 
 svn angiv url for project (branch);
