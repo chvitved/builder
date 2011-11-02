@@ -21,10 +21,12 @@ object RandomTest extends Properties("files") {
 	val testDirName = "randomtests"
 	val originDirName = "origin"
 	val repo1DirName = "repo1"
+	val repo1 = new File(testDirName + File.separator + repo1DirName)
+	val repo1Vc = new Git(repo1)  
+	  
 	val origin = new File(testDirName + File.separator + originDirName)
 	val rootVc = new Git(origin)
 
-	val repo1 = new File(testDirName + File.separator + repo1DirName)
 	
 	val serverUrl = "http://localhost:7000"
 	val buildserverDir = new File(testDirName + File.separator + "buildserver")
@@ -43,15 +45,14 @@ object RandomTest extends Properties("files") {
 	  val changes = tuple._2.reverse
 	  debugOutput(files, changes)			
 	  try {
+	    FileUtils.deleteFile(origin)
+	    FileUtils.deleteFile(repo1)
 	    FileUtils.createDir(origin)
 	    FileUtils.createDir(repo1)
 		rootVc.init()
 		createFiles(files, rootVc)
 		rootVc.commit("committet all files")
 
-		org.apache.commons.io.FileUtils.forceMkdir(repo1)
-
-		val repo1Vc = new Git(repo1)
 		repo1Vc.clone(origin)
 		createChanges(changes, repo1Vc)
 		if (!changes.isEmpty) {

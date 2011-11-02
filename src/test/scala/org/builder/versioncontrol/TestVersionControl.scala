@@ -32,6 +32,15 @@ class TestVersionControl extends ReposTest{
   }
   
   @Test
+  def hasChangedFiles() {
+    ForAll.forAll((origin, repo1) => {
+	    assertFalse(repo1.hasChanges())
+	    repo1.createNewFile("newFile.txt", "i am new", true)
+	    assertTrue(repo1.hasChanges())
+    })
+  }
+  
+  @Test
   def untrackedFiles() {
     ForAll.forAll((origin, repo1) => {
 	    assertTrue(repo1.untrackedFiles.isEmpty)
@@ -45,8 +54,6 @@ class TestVersionControl extends ReposTest{
 	    assertEquals(List(untrackedFile, untrackedFile2), repo1.untrackedFiles)
     })
   }
-  
-  
   
   @Test
   def applyPatch() {

@@ -74,7 +74,7 @@ object Generators {
 	def genChange(fileTreeRoot: FileTreeRoot, parentPath: File) : Gen[Seq[Change]] = {
 	  val generators = 
 	    for(child <- fileTreeRoot.children) yield genChange(child, parentPath) 
-		foldValues(generators)
+		foldValues(generators) suchThat(!_.isEmpty)
 	}
 	
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
