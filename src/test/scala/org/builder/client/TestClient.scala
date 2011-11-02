@@ -11,7 +11,7 @@ class TestClient extends ReposTest{
 	@Test
 	def untrackedFiles() {
 	  ForAll.forAll((origin, repo1) => {
-	    val client = new Client(repo1.vc, repo1.dir, null)
+	    val client = new Client(repo1.vc, null)
 		assertFalse(client.checkForUntrackedFiles())
 		val old = System.in
 		System.setIn(new ByteArrayInputStream("n\n".getBytes()))

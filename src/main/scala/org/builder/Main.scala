@@ -31,9 +31,9 @@ object Main {
 						
 			if ("build".equals(args(0))) {
 				val projectName = properties.readProperty("projectname")
-				new Client(vc, dir, server).build(projectName)
+				new Client(vc, server).build(projectName)
 			} else if ("buildserver".equals(args(0))) {
-				new Client(vc, dir, server).applyPatch(args(1))
+				new Client(vc, server).applyPatch(args(1))
 			} else if ("fetchfile".equals(args(0))) {
 				server.fetchToFile(args(1), new File("/tmp/" + System.currentTimeMillis()))
 			} else if ("patch"equals(args(0))) {

@@ -22,61 +22,61 @@ object RandomTest extends Properties("files") {
 	val originDirName = "origin"
 	val repo1DirName = "repo1"
 	val origin = new File(testDirName + File.separator + originDirName)
-	val repo1 = new File(testDirName + File.separator + repo1DirName)
+	val rootVc = new Git(origin)
 
+	val repo1 = new File(testDirName + File.separator + repo1DirName)
+	
 	val serverUrl = "http://localhost:7000"
 	val buildserverDir = new File(testDirName + File.separator + "buildserver")
 	val buildserverVc = new Git(buildserverDir);
 	
-	val buildServerStub = new BuildServerStub(buildserverVc, buildserverDir, origin.getCanonicalPath(), serverUrl)
+	val buildServerStub = new BuildServerStub(buildserverVc, origin.getCanonicalPath(), serverUrl)
 	Server.start(buildServerStub)
 
 
 	implicit def fileswithChanges: Arbitrary[(FileTreeRoot, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges)
 
 	var counter = 0;
+	
 	property("tree") =  Prop.forAll((tuple: (FileTreeRoot, Seq[Change])) => {
-		println()
-		counter += 1
-		println("test number " + counter)
-		try {
-			val files = tuple._1
-			val changes = tuple._2.reverse
-			println("files:")
-			FileTree.print(files)
-			println("change")
-			for(c <- changes) println(c)
-			println("-------------")
+	  val files = tuple._1
+	  val changes = tuple._2.reverse
+	  debugOutput(files, changes)			
+	  try {
+	    FileUtils.createDir(origin)
+	    FileUtils.createDir(repo1)
+		rootVc.init()
+		createFiles(files, rootVc)
+		rootVc.commit("committet all files")
 
+		org.apache.commons.io.FileUtils.forceMkdir(repo1)
 
-			
-			val rootVc = new Git(origin)
-			org.apache.commons.io.FileUtils.forceMkdir(origin)
-			rootVc.init()
-			createFiles(files, rootVc)
-			if (rootVc.hasChanges()) {
-				rootVc.commit("committet all files")
-
-				org.apache.commons.io.FileUtils.forceMkdir(repo1)
-
-				val repo1Vc = new Git(repo1)
-				repo1Vc.clone(origin)
-				createChanges(changes, repo1Vc)
-				if (!changes.isEmpty) {
-					org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)
-					val client = new Client(repo1Vc, repo1, new ServerApi(serverUrl))
-					client.build("test")
-					FileUtils.compareFiles(buildserverDir, repo1)
-				} else {
-					true				
-				}
-			} else {
-				true
-			}
-		} finally {
-			removeFiles();
+		val repo1Vc = new Git(repo1)
+		repo1Vc.clone(origin)
+		createChanges(changes, repo1Vc)
+		if (!changes.isEmpty) {
+			org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)
+			val client = new Client(repo1Vc, new ServerApi(serverUrl))
+			client.build("test")
+			FileUtils.compareFiles(buildserverDir, repo1)
+		} else {
+			true				
 		}
+	  } finally {
+		removeFiles();
+		println()
+	  }
 	})
+	
+	private def debugOutput(files: FileTreeRoot, changes: Seq[Change]) {
+	  counter += 1
+	  println("test number " + counter)
+	  println("files:")
+	  FileTree.print(files)
+	  println("change")
+	  for(c <- changes) println(c)
+	  println("-------------")
+	}
 	
 	private def concatPath(parentPath: String, path: String) : String = {
 	  val pp = if (parentPath == null) "" else parentPath + File.separatorChar

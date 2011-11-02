@@ -6,14 +6,14 @@ import java.util.regex.Pattern
 import org.builder. util.BuildId
 import org.builder.versioncontrol.VersionControl
 
-class Client(vc: VersionControl, dir: File, server: ServerApi) {
+class Client(vc: VersionControl, server: ServerApi) {
 	
 	
 	def build(projectName: String): Boolean = {
 	  	if (checkForUntrackedFiles()) {
 	  	  return false
 	  	}
-		val patchFile = new File(dir, "builder-patch.txt")
+		val patchFile = new File(vc.dir, "builder-patch.txt")
 		try {
 			val patch = vc.createPatch(patchFile)
 			if (patchFile.length() == 0) {
@@ -45,7 +45,7 @@ class Client(vc: VersionControl, dir: File, server: ServerApi) {
 		vc.checkout(revision)
 		var patchFile: File = null
 		try {
-			patchFile =  new File(dir, buildId + ".patch")
+			patchFile =  new File(vc.dir, buildId + ".patch")
 			server.fetchToFile(buildId,patchFile)
 			vc.apply(patchFile)
 		} finally {
