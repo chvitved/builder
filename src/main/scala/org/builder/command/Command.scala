@@ -13,7 +13,8 @@ object Command {
 	
   def execute(command: String, file: File)( implicit dir: File) {
    println(command)
-   val pb = Process(command, dir) #> file
+   val tokenizedCommand: Seq[String] = tokenizeCommand(command)
+   val pb = Process(tokenizedCommand, dir) #> file
    val exitValue = pb !	 
 
    if (exitValue != 0) {

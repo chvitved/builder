@@ -24,9 +24,11 @@ object RandomTest extends Properties("files") {
 	val origin = new File(testDirName + File.separator + originDirName)
 	val repo1 = new File(testDirName + File.separator + repo1DirName)
 
+	val rootVc = new Git(origin)
+	
 	val serverUrl = "http://localhost:7000"
 	val buildserverDir = new File(testDirName + File.separator + "buildserver")
-	val buildServerStub = new BuildServerStub(buildserverDir, origin.getCanonicalPath(), serverUrl)
+	val buildServerStub = new BuildServerStub(rootVc, buildserverDir, origin.getCanonicalPath(), serverUrl)
 	Server.start(buildServerStub)
 
 
@@ -47,7 +49,7 @@ object RandomTest extends Properties("files") {
 			println("-------------")
 
 
-			val rootVc = new Git(origin)
+			
 
 			org.apache.commons.io.FileUtils.forceMkdir(origin)
 			rootVc.init()
@@ -62,7 +64,7 @@ object RandomTest extends Properties("files") {
 				createChanges(changes, repo1Vc)
 				if (!changes.isEmpty) {
 					org.apache.commons.io.FileUtils.forceMkdir(buildserverDir)
-					val client = new Client(repo1, new ServerApi(serverUrl))
+					val client = new Client(repo1Vc, repo1, new ServerApi(serverUrl))
 					client.build("test")
 					FileUtils.compareFiles(buildserverDir, repo1)
 				} else {

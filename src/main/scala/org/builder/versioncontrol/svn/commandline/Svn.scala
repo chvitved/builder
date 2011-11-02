@@ -25,8 +25,8 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   
   override def createPatch(f: File): Patch = {
     val svnInfo = info
-    val id = svnInfo.url + "@" + svnInfo.revision
-    val command = String.format(""""svn diff --force --diff-cmd diff -x "-au --binary"""")
+    val id = svnInfo.revision
+    val command = String.format("""svn diff --force --diff-cmd diff -x "-au --binary"""")
     Command.execute(command, f.getCanonicalFile())
     Patch(f, id)
     
@@ -39,15 +39,16 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   
   override def init() {
     val projectName = dir.getName()
-    val importUrl = repo.url + File.separator + projectName + "/trunk"
-    val command = String.format("""svn import . %s -m "Initial import of project"""", importUrl)
+    val url = repo.url + File.separator + projectName + "/trunk"
+    val command = String.format("""svn import . %s -m "Initial import of project"""", url)
     Command.execute(command)
+    clone(url);
+    
   }
   
   override def clone(directory: File) {
     val command = "svn info"
-    Command.execute(command)(directory)
-    val info = SvnInfo.parse(Command.execute(command))
+    val info = SvnInfo.parse(Command.execute(command)(directory))
     clone(info.url)
   }
   
@@ -86,7 +87,7 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   def untrackedFiles(): Seq[String] = {
   	val command = "svn status"
   	val output = Command.execute(command)
-  	output.split("\n").filter(_.startsWith("?")).map(_.replace("""?\s++""", ""))
+  	output.split("\n").filter(_.startsWith("?")).map(_.replaceFirst("""\?\s++""", ""))
   }
   
   private def checkFilePath(file: File): Unit = {

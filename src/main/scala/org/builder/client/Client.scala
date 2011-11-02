@@ -6,12 +6,11 @@ import java.util.regex.Pattern
 import org.builder. util.BuildId
 import org.builder.versioncontrol.VersionControl
 
-class Client(dir: File, server: ServerApi) {
+class Client(vc: VersionControl, dir: File, server: ServerApi) {
 	
-	val vc: VersionControl = new Git(dir)
 	
 	def build(projectName: String): Boolean = {
-	  	if (!checkForUntrackedFiles()) {
+	  	if (checkForUntrackedFiles()) {
 	  	  return false
 	  	}
 		val patchFile = new File(dir, "builder-patch.txt")
@@ -42,7 +41,6 @@ class Client(dir: File, server: ServerApi) {
 	
 	def applyPatch(buildId: String, repoUrl: String) {
 		val revision = BuildId.getRevisionFromId(buildId)			
-		val vc = new Git(dir)
 		if (repoUrl != null) vc.clone(repoUrl)
 		vc.checkout(revision)
 		var patchFile: File = null
@@ -58,8 +56,8 @@ class Client(dir: File, server: ServerApi) {
 	def checkForUntrackedFiles(): Boolean =  {
 	  val q = "There are files that are not tracked by your version control. These files will not be send to the build server. Continue?"
 	  if (!vc.untrackedFiles().isEmpty && !new CommandLine().yesNo(q)) {
-	    false;
-	  } else true
+	    true;
+	  } else false
 	}
 
 }
