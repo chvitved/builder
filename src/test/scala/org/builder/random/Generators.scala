@@ -80,7 +80,10 @@ object Generators {
 	def genChange(fileTree: FileTree, parentPath: File) : Gen[Seq[Change]] = {
 	  fileTree match {
 	  	case dir: Directory => {
+	  	  if (!dir.children.isEmpty)
 	  		Gen.frequency((1, genChangeDir(dir, parentPath)), (20, genChangeDirContent(dir, parentPath)), (5, genAddToDir(dir, parentPath)), (5,genEmptyChange))
+	  	  else 	
+	  	    Gen.frequency((1, genAddToDir(dir, parentPath)), (1,genEmptyChange))
 	    }
 		case file: FileLeaf =>
 			Gen.frequency((1, genChangeFile(file, parentPath)), (10, genEmptyChange))
@@ -141,7 +144,6 @@ object Generators {
 			mDirContent <- genChangeDirContent(dir, parentPath)
 		} yield mDir ++ mDirContent
 	}
-	
 	
 	def genChangeFile(file: FileLeaf, parentPath: File): Gen[Seq[Change]] = {
 		val gen = Gen.frequency((5, genEditFile(file, parentPath)), (1, genDeleteFile(file, parentPath)), (1, genMoveFile(file, parentPath)))

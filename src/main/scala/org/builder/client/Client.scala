@@ -45,23 +45,21 @@ class Client(vc: VersionControl, server: ServerApi) {
 
 	def applyPatch(buildId: String, repoUrl: String) {
 		val revision = BuildId.getRevisionFromId(buildId)			
-				if (repoUrl != null) vc.clone(repoUrl)
-				vc.checkout(revision)
-				var patchFile: File = null
-				try {
-					patchFile =  new File(vc.dir, buildId + ".patch")
-					server.fetchToFile(buildId,patchFile)
-					vc.apply(patchFile)
-				} finally {
-					if (patchFile != null) patchFile.delete()
-				}
+		if (repoUrl != null) vc.clone(repoUrl)
+		vc.checkout(revision)
+		var patchFile: File = null
+		try {
+			patchFile =  new File(vc.dir, buildId + ".patch")
+			server.fetchToFile(buildId,patchFile)
+			vc.apply(patchFile)
+		} finally {
+			if (patchFile != null) patchFile.delete()
+		}
 	}
 
 	def checkForUntrackedFiles(): Boolean =  {
-			val q = "There are files that are not tracked by your version control. These files will not be send to the build server. Continue?"
-					if (!vc.untrackedFiles().isEmpty && !new CommandLine().yesNo(q)) {
-						true;
-					} else false
+		val q = "There are files that are not tracked by your version control. These files will not be send to the build server. Continue?"
+		!vc.untrackedFiles().isEmpty && !new CommandLine().yesNo(q) 
 	}
 
 }

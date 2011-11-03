@@ -9,3 +9,6 @@ case class Edit(file: File, fileType: FileType, changes: Seq[AFileChange]) exten
 case class Move(source: File, destination: File) extends Change
 
 case class AFileChange(position: Int, length: Int) 
+
+
+

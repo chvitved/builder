@@ -16,7 +16,7 @@ object Main {
 
 	def main(args : Array[String]) {
 		if ("server".equals(args(0))) {
-			Server.start
+			new Server().start
 		} else if ("test".equals(args(0))) {
 		  Command.execute("env")(new File("."))
 		  Command.execute("git")(new File("."))
@@ -26,7 +26,6 @@ object Main {
 			val serverUrl = properties.readProperty("serverurl")
 			val server = new ServerApi(serverUrl)
 			
-			val repoType = properties.readProperty("repotype")
 			val vc: VersionControl = null
 						
 			if ("build".equals(args(0))) {
