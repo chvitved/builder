@@ -10,7 +10,7 @@ object Generators {
 
 	//val genNames = Gen.alphaStr suchThat (c => c.length > 2 && c.length < 50 )
 	val genNames = for{
-		size <- Gen.choose(1,20);
+		size <- Gen.choose(3,20);
 		str <- Gen.containerOfN[List, Char](size, Gen.alphaChar) map (_.mkString)
 	} yield str
 	
@@ -31,6 +31,8 @@ object Generators {
 	
 	def genText(size: Int) : Gen[String] =
 			Gen.containerOfN[List,Char](size, genChars) map {_.filter{c=>Character.isDefined(c) && !Character.isLowSurrogate(c) && !Character.isHighSurrogate(c)}.mkString}
+	
+	//def genText(size: Int) : Gen[String] = Gen.alphaStr
 	
 	// we ignore some utf chars are longer than a byte
 	def genTextBytes(size: Int): Gen[Array[Byte]] = genText(size) map (str => str.getBytes("UTF-8"))
@@ -69,7 +71,7 @@ object Generators {
 		doGenDir().map(toFileTreeRoot _)
 	}
 
-	val genFileTree: Gen[FileTreeRoot] = Gen.sized(sz => genDir(sz)) suchThat(!_.getFiles.isEmpty)
+	val genFileTree: Gen[FileTreeRoot] = Gen.sized(sz => genDir(sz)) suchThat(_.size > 0)
 	
 	def genChange(fileTreeRoot: FileTreeRoot, parentPath: File) : Gen[Seq[Change]] = {
 	  val generators = 
@@ -108,7 +110,8 @@ object Generators {
 	}
 	
 	def genAddFile(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {
-		for (f <- genFile) yield Seq(AddFile(new File(parentPath, f.name), f.fileType))
+		for (f <- genFile)
+		  yield Seq(AddFile(new File(parentPath, f.name), f.fileType))
 	}
 	
 	def genAddDir(dir: Directory, parentPath: File) : Gen[Seq[Change]] = {

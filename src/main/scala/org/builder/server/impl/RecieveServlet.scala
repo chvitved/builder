@@ -6,14 +6,15 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import org.apache.commons.io.IOUtils
-import org.builder.buildserver.BuildserverApi
 import org.builder.util.BuildId
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.util.zip.GZIPInputStream
+import org.builder.ciserver.CIServerApi
+import java.net.URLDecoder
 
-class RecieveServlet(buildserver: BuildserverApi) extends HttpServlet{
+class RecieveServlet(ciServer: CIServerApi) extends HttpServlet{
   
   val storageDir = "storage"
   
@@ -28,13 +29,14 @@ class RecieveServlet(buildserver: BuildserverApi) extends HttpServlet{
    * receives new builds
    */
   override def doPost(req: HttpServletRequest, res: HttpServletResponse) {
-	 val projectName = req.getParameter("project")
+	 val ciJobUrl = URLDecoder.decode(req.getParameter("ciurl"), "UTF-8")
 	 val revision = req.getParameter("revision")
-	 val buildId = BuildId.createBuildId(projectName, revision)
+	 val buildId = BuildId.createBuildId(revision)
+	 val repoUrl = URLDecoder.decode(req.getParameter("repourl"), "UTF-8")
 	 val newFileStream =  new BufferedOutputStream(new FileOutputStream(getFileName(buildId)))
 	 IOUtils.copy(req.getInputStream(), newFileStream)
 	 newFileStream.close()
-	 buildserver.build(buildId, projectName)
+	 ciServer.build(buildId, ciJobUrl, String.format("%s?buildid=%s", req.getRequestURL(), buildId), null)
 	 
 	 val buildUrl =  String.format("http://%s/build/?buildid=%s", req.getHeader("Host"), buildId)
 	 res.setHeader("Location",buildUrl)

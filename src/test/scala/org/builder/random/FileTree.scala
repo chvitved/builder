@@ -26,7 +26,8 @@ object FileTree {
 	
 }
 
-abstract sealed class FileTree(name: String){
+trait FileTree{
+	val name: String
 	def size: Int = this match {
     	case FileLeaf(_, _) => 1
     	case Directory(name, children) => (children :\ 0) (_.size + _)
@@ -51,8 +52,8 @@ case class FileTreeRoot(children: Seq[FileTree]) {
   def size: Int = (children :\0) (_.size + _)
   def getFiles() : Seq[(File, FileType)] = (children :\ Seq[(File, FileType)]()) ( (fileTree, seq) => fileTree.getFiles ++ seq)
 }
-case class Directory(name: String, children: Seq[FileTree]) extends FileTree(name)
-case class FileLeaf(name: String, fileType: FileType) extends FileTree(name)
+case class Directory(name: String, children: Seq[FileTree]) extends FileTree
+case class FileLeaf(name: String, fileType: FileType) extends FileTree
 
 
 abstract sealed case class FileType(size: Int)

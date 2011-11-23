@@ -12,14 +12,15 @@ import java.util.zip.GZIPInputStream
 import java.io.FileInputStream
 import java.io.OutputStream
 import java.io.InputStream
+import java.net.URLEncoder
 
 class ServerApi(serverUrl: String) {
 	
-	def send(patch: Patch, projectName: String): String = {
+	def send(patch: Patch, ciJobUrl: String): String = {
 		var in : InputStream = null
 		var out: OutputStream =  null
 		try {
-			val url = new URL(String.format("%s/build/?project=%s&revision=%s",serverUrl, projectName, patch.revision))
+			val url = new URL(String.format("%s/build/?revision=%s&ciurl=%s",serverUrl, patch.revision, URLEncoder.encode(ciJobUrl, "UTF-8")))
 			val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
 			connection.setDoOutput(true)
 			connection.setRequestProperty("Content-Type", "application/x-gzip")

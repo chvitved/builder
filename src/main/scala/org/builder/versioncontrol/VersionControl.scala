@@ -14,6 +14,7 @@ abstract class VersionControl {
   def init()
   def clone(url: String)
   def clone(dir: File)
+  def cloneAndCheckout(url: String, revision: String)
   def add(file: File)
   def move(src: File, dest: File)
   def remove(file: File)

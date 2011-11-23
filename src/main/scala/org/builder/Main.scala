@@ -10,6 +10,7 @@ import org.builder.versioncontrol.git.commandline.Git
 import org.apache.commons.io.FileUtils
 import org.builder.command.Command
 import org.builder.versioncontrol.VersionControl
+import org.builder.versioncontrol.svn.commandline.Svn
 
 
 object Main {
@@ -20,26 +21,18 @@ object Main {
 		} else if ("test".equals(args(0))) {
 		  Command.execute("env")(new File("."))
 		  Command.execute("git")(new File("."))
-		} else {
+		} else if ("build".equals(args(0))) {
 			val dir = new File(".")
 			val properties = new Properties(".builder-properties")
-			val serverUrl = properties.readProperty("serverurl")
+			val serverUrl = properties.readProperty("server.url")
+			val ciJobUrl = properties.readProperty("ci.job.url")
 			val server = new ServerApi(serverUrl)
 			
-			val vc: VersionControl = null
+			val vc: VersionControl = new Svn(new File("."), null)
+			new Client(vc, server).build(ciJobUrl)
 						
-			if ("build".equals(args(0))) {
-				val projectName = properties.readProperty("projectname")
-				new Client(vc, server).build(projectName)
-			} else if ("buildserver".equals(args(0))) {
-				new Client(vc, server).applyPatch(args(1))
-			} else if ("fetchfile".equals(args(0))) {
-				server.fetchToFile(args(1), new File("/tmp/" + System.currentTimeMillis()))
-			} else if ("patch"equals(args(0))) {
-				val vc = new Git(dir)
-				val p = vc.createPatch(new File(dir, "builder-patch"))
-				println(FileUtils.readFileToString(p.diffFile))
-			}
-		}
+		}else if ("applyPatch".equals(args(0))) {
+			new Client(null, null).applyPatch(args(1))
+		} 
 	}
 }

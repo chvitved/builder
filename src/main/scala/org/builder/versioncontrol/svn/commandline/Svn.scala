@@ -5,6 +5,8 @@ import org.builder.versioncontrol.VersionControl
 import org.builder.command.Command
 import org.builder.versioncontrol.Patch
 
+import org.builder.versioncontrol.svn.patcher._
+
 class Svn(directory: File, repo: SvnRepo) extends VersionControl{
 
   implicit val dir = directory
@@ -26,8 +28,10 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   override def createPatch(f: File): Patch = {
     val svnInfo = info
     val id = svnInfo.revision
-    val command = String.format("""svn diff --force --diff-cmd diff -x "-au --binary"""")
-    Command.execute(command, f.getCanonicalFile())
+//    val command = String.format("""svn diff --force --diff-cmd diff -x "-au --binary"""")
+//    Command.execute(command, f.getCanonicalFile())
+
+    CreatePatch.createPatchFromStatus(status, dir, f)
     Patch(f, id)
     
   }
@@ -44,6 +48,10 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
     Command.execute(command)
     clone(url);
     
+  }
+  
+  def cloneAndCheckout(url: String, revision: String) {
+    clone(url + "@" + revision) 
   }
   
   override def clone(directory: File) {
@@ -74,7 +82,13 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   }
   
   override def apply(patchFile: File) {
-    val command = "patch -p0 --binary -i " + patchFile.getCanonicalPath()
+    //val command = "patch -p0 --binary -i " + patchFile.getCanonicalPath()
+    //Command.execute(command)
+    ApplyPatch.applyPatch(patchFile, dir)
+  }
+  
+  def status: String = {
+    val command = "svn st"
     Command.execute(command)
   }
   

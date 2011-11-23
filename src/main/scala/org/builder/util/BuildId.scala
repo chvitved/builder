@@ -8,11 +8,11 @@ object BuildId {
 	val formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
 	
 	def getRevisionFromId(buildId: String) = {
-		buildId.split("_")(1)
+		buildId.split("_")(0)
 	}
 	
-	def createBuildId(projectName: String, revision: String) = {
-		String.format("%s_%s_%s", projectName, revision, formatter.format(new Date())) 
+	def createBuildId(revision: String) = {
+		String.format("%s_%s", revision, formatter.format(new Date())) 
 	}
 
 }

@@ -13,12 +13,13 @@ import org.builder.versioncontrol.VersionControl
 import org.builder.client.Client
 import org.builder.server.api.ServerApi
 import org.builder.server.impl.Server
-import org.builder.buildserver.BuildServerStub
+import org.builder.ciserver.CIServerStub
 import java.util.Arrays
 
 object RandomTest extends Properties("files") {
   
   val baseDir = new File("randomtests")
+  FileUtils.deleteFile(baseDir)
   val scenarioFactory = new ScenarioFactory(baseDir)
   
 	implicit def fileswithChanges: Arbitrary[(FileTreeRoot, Seq[Change])] = Arbitrary(Generators.genFilesWithChanges)
@@ -30,13 +31,14 @@ object RandomTest extends Properties("files") {
 	  val changes = tuple._2.reverse
 	  debugOutput(files, changes)			
 	  forAll((origin: VersionControl, repo1: VersionControl, client: Client, buildserverDir: File) => {
-          origin.init()
+          println("running test with " + origin.getClass)
+		  origin.init()
           ManipulateFiles.createFiles(files, origin)
           origin.commit("committet all files")
 
           repo1.clone(origin.dir)
           ManipulateFiles.createChanges(changes, repo1)
-          client.build("test")
+          client.build("http://test.com")
           FileUtils.compareFiles(buildserverDir, repo1.dir)
 	  })
 	})
@@ -46,7 +48,6 @@ object RandomTest extends Properties("files") {
 	  try {
 	    vcConfigs.forall(vcConfig => method(vcConfig.origin, vcConfig.repo1, vcConfig.client, vcConfig.buildserverDir))
 	  } finally {
-	    FileUtils.deleteFile(baseDir);
 		println()
 	  }
 	}

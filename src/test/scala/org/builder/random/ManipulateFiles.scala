@@ -4,6 +4,7 @@ import java.io.File
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import org.scalacheck.Gen
+import org.builder.util.FileUtils
 
 object ManipulateFiles {
 	def createChanges(changes: Seq[Change], vc: VersionControl) {
@@ -12,15 +13,18 @@ object ManipulateFiles {
 			println("change " + c)
 			c match {
 				case AddFile(file, fileType) => {
-					writeFileData(file.getName(), fileType, concatPath(parentPath, file.getParent()), vc)
+				  FileUtils.createDir(file.getCanonicalFile().getParentFile())
+				  writeFileData(file.getName(), fileType, concatPath(parentPath, file.getParent()), vc)
 				}
 				case AddDir(file) => {
-					org.apache.commons.io.FileUtils.forceMkdir(prependPath(parentPath, file))
+				  val dir = prependPath(parentPath, file)
+				  org.apache.commons.io.FileUtils.forceMkdir(dir)
+				  vc.add(dir)
 				}
 				case Remove(file) => {
-					if (!(file.isDirectory() && file.list().isEmpty)) {
-						vc.remove(prependPath(parentPath, file))						
-					}
+				  val f = prependPath(parentPath, file)
+				  vc.remove(f)
+				  f.delete();
 				}
 				case Edit(file, fileType, changes) => {
 				    val f = prependPath(parentPath, file)
@@ -29,10 +33,9 @@ object ManipulateFiles {
 				}
 				case Move(src, dest) => {
 				  val s = prependPath(parentPath, src)
-				  if (!(s.isDirectory() && s.list().isEmpty)) {
-				    val d = prependPath(parentPath, dest)
-					vc.move(s, d)
-				  }
+				  val d = prependPath(parentPath, dest)
+				  vc.move(s, d)
+				  
 				}
 			}
 		}
@@ -70,11 +73,19 @@ object ManipulateFiles {
 		  writeFileData(name, fileType, parentPath, vc)
 		}
 		case Directory(name, children) => {
-		  val dir = new File(parentPath, name)
-		  dir.mkdir()
+		  val dir = createDir(parentPath, vc, name)
 		  for(c <- children) doCreateFiles(c, dir.getPath(), vc)
 		}
 	  }
+	}
+	
+	private def createDir(parentPath: String, vc: org.builder.versioncontrol.VersionControl, name: String): java.io.File = {
+	  val parent = new File(parentPath)
+	  FileUtils.createDir(parent)
+	  val dir = new File(parent, name)
+	  FileUtils.createDir(dir)
+	  vc.add(dir)
+	  dir
 	}
 	
 	private def concatPath(parentPath: String, path: String) : String = {
@@ -109,4 +120,5 @@ object ManipulateFiles {
 		fw.close
 		vc.add(f)
 	}
+  
 }

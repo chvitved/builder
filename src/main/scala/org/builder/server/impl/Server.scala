@@ -3,16 +3,14 @@ package org.builder.server.impl
 import org.mortbay.jetty.servlet.Context
 import org.mortbay.jetty.servlet.ServletHolder
 import org.builder.util.Properties
-import org.builder.buildserver.BuildserverApi
+import org.builder.ciserver.CIServerApi;
 
 class Server {
   
   var server: org.mortbay.jetty.Server = null
   
   def start: Server = {
-	val properties = new Properties(".builder-server-properties")
-	val buildServerUrl = properties.readProperty("buildserver.url")
-	start(new BuildserverApi(buildServerUrl), 7000)
+	start(new CIServerApi(), 7000)
   }
 	
   def stop() {
@@ -21,7 +19,7 @@ class Server {
 	}
   }
 	
-  def start(buildServer: BuildserverApi, port: Integer): Server = {
+  def start(buildServer: CIServerApi, port: Integer): Server = {
     stop();
     server = new org.mortbay.jetty.Server(port)
     val root = new Context(server,"/",Context.SESSIONS)

@@ -8,8 +8,7 @@ import org.builder.versioncontrol.VersionControl
 
 class Client(vc: VersionControl, server: ServerApi) {
 
-
-	def build(projectName: String): Boolean = {
+	def build(ciJobUrl: String): Boolean = {
 		if (checkForUntrackedFiles()) {
 			return false
 		}
@@ -24,7 +23,7 @@ class Client(vc: VersionControl, server: ServerApi) {
 				println("No changes found...")
 				false
 			} else {
-				val buildResource = server.send(patch, projectName)
+				val buildResource = server.send(patch, ciJobUrl)
 				val pattern = Pattern.compile(".*\\?buildid=(.*+)")
 				val matcher = pattern.matcher(buildResource)
 				matcher.matches()
@@ -45,8 +44,9 @@ class Client(vc: VersionControl, server: ServerApi) {
 
 	def applyPatch(buildId: String, repoUrl: String) {
 		val revision = BuildId.getRevisionFromId(buildId)			
-		if (repoUrl != null) vc.clone(repoUrl)
-		vc.checkout(revision)
+		if (repoUrl != null) vc.cloneAndCheckout(repoUrl, revision)
+		else vc.checkout(revision)
+		
 		var patchFile: File = null
 		try {
 			patchFile =  new File(vc.dir, buildId + ".patch")

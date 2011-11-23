@@ -24,7 +24,7 @@ class Git(directory: File) extends VersionControl{
   
   private def getLatestRevision(branch: String): String = {
     val command = "git rev-parse " + branch
-    Command.execute(command)
+    Command.execute(command).replace("\n", "")
   }
   
   override def createPatch(f: File): Patch = {
@@ -36,8 +36,10 @@ class Git(directory: File) extends VersionControl{
   }
   
   override def move(src: File, dest: File) {
-  	val command = String.format("git mv %s %s", src.getCanonicalFile(), dest.getCanonicalFile())
-    Command.execute(command)
+    if (!(src.isDirectory() && src.list().isEmpty)) {
+      val command = String.format("git mv %s %s", src.getCanonicalFile(), dest.getCanonicalFile())
+      Command.execute(command)
+    }
   }
   
   override def init() {
@@ -54,15 +56,22 @@ class Git(directory: File) extends VersionControl{
     Command.execute(command)
   }
   
+  def cloneAndCheckout(url: String, revision: String) {
+    clone(url)
+    checkout(revision)
+  }
+  
   override def checkout(revision: String) {
   	val command = "git checkout " + revision 
     Command.execute(command)
   }
   
   override def add(file: File) {
-    checkFilePath(file)
-    val command = "git add " + file.getCanonicalPath()
-    Command.execute(command)
+    if (!file.isDirectory()) {
+    	checkFilePath(file)
+    	val command = "git add " + file.getCanonicalPath()
+    	Command.execute(command)
+    }
   }
   
   override def remove(file: File) {
