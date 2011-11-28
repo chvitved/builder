@@ -11,6 +11,9 @@ import org.apache.commons.io.FileUtils
 import org.builder.command.Command
 import org.builder.versioncontrol.VersionControl
 import org.builder.versioncontrol.svn.commandline.Svn
+import org.builder.util.Base64Encoder
+import org.builder.versioncontrol.VCType
+import org.builder.client.DiscoverVersionControl
 
 
 object Main {
@@ -23,16 +26,19 @@ object Main {
 		  Command.execute("git")(new File("."))
 		} else if ("build".equals(args(0))) {
 			val dir = new File(".")
-			val properties = new Properties(".builder-properties")
+			val properties = new Properties(new File(dir, ".builder-properties"))
 			val serverUrl = properties.readProperty("server.url")
-			val ciJobUrl = properties.readProperty("ci.job.url")
-			val server = new ServerApi(serverUrl)
+			val ciUrl = properties.readProperty("ci.url")
+			val jobName = properties.readProperty("ci.job")
+			val vc: VersionControl = DiscoverVersionControl.discover(dir)
 			
-			val vc: VersionControl = new Svn(new File("."), null)
-			new Client(vc, server).build(ciJobUrl)
-						
+			new Client().build(vc, serverUrl, ciUrl, jobName)
 		}else if ("applyPatch".equals(args(0))) {
-			new Client(null, null).applyPatch(args(1))
+		  val patchUrl = Base64Encoder.decode(args(1))
+		  val repoUrl = Base64Encoder.decode(args(2))
+		  val vcType = VCType.fromString(args(3))
+		  val dir = new File(".")
+		  new Client().applyPatch(patchUrl, repoUrl, vcType, dir)
 		} 
 	}
 }

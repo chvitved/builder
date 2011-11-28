@@ -8,6 +8,7 @@ import org.builder.versioncontrol.Patch
 import org.apache.commons.io.FileUtils
 import scala.sys.process.Process
 import java.io.ByteArrayOutputStream
+import org.builder.versioncontrol.VCType
 	
 class Git(directory: File) extends VersionControl{
 
@@ -32,8 +33,14 @@ class Git(directory: File) extends VersionControl{
     val command = String.format("git diff --binary %s ", id)
     Command.execute(command, f.getCanonicalFile())
     Patch(f, id)
-    
   }
+  
+  def originUrl = {
+    val command = "git config --get remote.origin.url"
+    Command.execute(command).replace("\n", "")
+  }
+  
+  def vcType = VCType.git
   
   override def move(src: File, dest: File) {
     if (!(src.isDirectory() && src.list().isEmpty)) {

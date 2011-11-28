@@ -3,16 +3,19 @@ import org.builder.client.Client
 import org.builder.server.api.ServerApi
 import org.builder.util.FileUtils
 import org.builder.versioncontrol.VersionControl
+import java.io.File
+import org.builder.versioncontrol.VCType._
 
-class CIServerStub(vc: VersionControl, serverUrl: String) extends CIServerApi{
+class CIServerStub(dir: File, vcType: VCType) extends CIServerApi{
 	
-	val client = new Client(vc, new ServerApi(serverUrl))
+	val client = new Client()
 	
-	override def build(buildId: String, ciJobUrl: String, patchUrl: String, str: String) {
+	override def build(ciUrl: String, jobName:String, repoUrl: String, patchUrl: String): String = {
 		println("buildserver starting to build")
-		FileUtils.deleteFile(vc.dir)
-		FileUtils.createDir(vc.dir)
-		client.applyPatch(buildId, null)
+		FileUtils.deleteFile(dir)
+		FileUtils.createDir(dir)
+		client.applyPatch(patchUrl, repoUrl, vcType, dir)
 		println("buildserver applied patch")
+		"url"
 	}
 }

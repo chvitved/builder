@@ -1,10 +1,11 @@
 package org.builder.util
 import java.io.FileReader
+import java.io.File
 
-class Properties(filename: String) {
+class Properties(file: File) {
 	
 	private val properties = new java.util.Properties()
-	properties.load(new FileReader(filename))
+	properties.load(new FileReader(file))
 	
 	def readProperty(key: String, allowNull: Boolean): String = {
 		val value = properties.getProperty(key)

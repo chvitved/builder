@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletResponse
 import java.util.zip.GZIPInputStream
 import org.builder.ciserver.CIServerApi
 import java.net.URLDecoder
+import org.builder.util.Base64Encoder
+import org.builder.versioncontrol.VCType
 
 class RecieveServlet(ciServer: CIServerApi) extends HttpServlet{
   
@@ -29,16 +31,20 @@ class RecieveServlet(ciServer: CIServerApi) extends HttpServlet{
    * receives new builds
    */
   override def doPost(req: HttpServletRequest, res: HttpServletResponse) {
-	 val ciJobUrl = URLDecoder.decode(req.getParameter("ciurl"), "UTF-8")
-	 val revision = req.getParameter("revision")
-	 val buildId = BuildId.createBuildId(revision)
-	 val repoUrl = URLDecoder.decode(req.getParameter("repourl"), "UTF-8")
+	 val ciUrl = Base64Encoder.decode(req.getParameter("ciurl"))
+	 val jobName = Base64Encoder.decode(req.getParameter("job"))
+	 val revision = req.getParameter("revision")	 
+	 val repoUrl = URLDecoder.decode(req.getParameter("repo"), "UTF-8")
+	 val vc = req.getParameter("vc")
+	 val buildId = BuildId.createBuildId(jobName, revision, VCType.fromString(vc));
+	 
 	 val newFileStream =  new BufferedOutputStream(new FileOutputStream(getFileName(buildId)))
 	 IOUtils.copy(req.getInputStream(), newFileStream)
 	 newFileStream.close()
-	 ciServer.build(buildId, ciJobUrl, String.format("%s?buildid=%s", req.getRequestURL(), buildId), null)
+	 val patchUrl = String.format("%s?buildid=%s", req.getRequestURL(), buildId)
+	 val buildUrl = ciServer.build(ciUrl, jobName, repoUrl, patchUrl)
 	 
-	 val buildUrl =  String.format("http://%s/build/?buildid=%s", req.getHeader("Host"), buildId)
+	 //val buildUrl =  String.format("http://%s/build/?buildid=%s", req.getHeader("Host"), buildId)
 	 res.setHeader("Location",buildUrl)
 	 res.setStatus(201) //created
   }

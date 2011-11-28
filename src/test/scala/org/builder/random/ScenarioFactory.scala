@@ -9,6 +9,7 @@ import org.builder.server.api.ServerApi
 import org.builder.util.FileUtils
 import org.builder.versioncontrol.svn.commandline.Svn
 import org.builder.versioncontrol.svn.commandline.SvnRepo
+import org.builder.versioncontrol.VCType
 
 class ScenarioFactory(baseDir: File) {
   
@@ -23,7 +24,7 @@ class ScenarioFactory(baseDir: File) {
 	val repo1GitVc = new Git(repo1GitDir)
 	
 	val buildserverGitVc = new Git(buildserverDir);
-    val buildServerStubGit = null //new CIServerStub(buildserverGitVc, originGitDir.getCanonicalPath(), serverWithGitUrl)
+    val buildServerStubGit = new CIServerStub(buildserverDir, VCType.git)
     val serverWithGit = new Server().start(buildServerStubGit, 7000)
     
     
@@ -38,7 +39,7 @@ class ScenarioFactory(baseDir: File) {
 	val repo1SvnVc = new Svn(repo1SvnDir, svnRepo)
 	val buildserverSvnVc = new Svn(buildserverDir, svnRepo)
     
-    val buildServerStubSvn = null //new CIServerStub(buildserverSvnVc, svnUrl, serverWithSvnUrl)
+    val buildServerStubSvn = new CIServerStub(buildserverDir, VCType.svn)
     val serverWithSvn = new Server().start(buildServerStubSvn, 7001)
     
     
@@ -55,12 +56,8 @@ class ScenarioFactory(baseDir: File) {
     FileUtils.createDir(originSvnDir)
     FileUtils.createDir(repo1SvnDir)
 
-    val clientWithGit = new Client(repo1GitVc, new ServerApi(serverWithGitUrl))
-    val gitScenario = Scenario(originGitVc, repo1GitVc, clientWithGit, buildserverDir)
-    
-    val clientWithSvn = new Client(repo1SvnVc, new ServerApi(serverWithSvnUrl))
-	val svnScenario = Scenario(originSvnVc, repo1SvnVc, clientWithSvn, buildserverDir)
-    
+    val gitScenario = Scenario(originGitVc, repo1GitVc, new Client(), buildserverDir, serverWithGitUrl)    
+	val svnScenario = Scenario(originSvnVc, repo1SvnVc, new Client(), buildserverDir, serverWithSvnUrl)
     List(gitScenario, svnScenario)
   }
 }
@@ -69,5 +66,6 @@ case class Scenario(
   val origin : VersionControl,
   val repo1 : VersionControl,
   val client: Client,
-  val buildserverDir: File
+  val buildserverDir: File,
+  val serverUrl: String
   )

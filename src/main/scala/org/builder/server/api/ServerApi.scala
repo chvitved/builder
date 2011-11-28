@@ -13,14 +13,16 @@ import java.io.FileInputStream
 import java.io.OutputStream
 import java.io.InputStream
 import java.net.URLEncoder
+import org.builder.util.Base64Encoder
+import org.builder.versioncontrol.VCType._
 
-class ServerApi(serverUrl: String) {
+class ServerApi() {
 	
-	def send(patch: Patch, ciJobUrl: String): String = {
+	def send(serverUrl: String, patch: Patch, ciUrl: String, jobName: String, repoUrl: String, vc: VCType): String = {
 		var in : InputStream = null
 		var out: OutputStream =  null
 		try {
-			val url = new URL(String.format("%s/build/?revision=%s&ciurl=%s",serverUrl, patch.revision, URLEncoder.encode(ciJobUrl, "UTF-8")))
+			val url = new URL(String.format("%s/build/?revision=%s&ciurl=%s&job=%s&repo=%s&vc=%s",serverUrl, patch.revision, Base64Encoder.encode(ciUrl), Base64Encoder.encode(jobName), repoUrl, vc.toString))
 			val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
 			connection.setDoOutput(true)
 			connection.setRequestProperty("Content-Type", "application/x-gzip")
@@ -47,12 +49,12 @@ class ServerApi(serverUrl: String) {
 		
 	}
 	
-	def fetchToFile(buildId: String, file: File) {
-		val url = new URL(String.format("%s/build/?buildid=%s",serverUrl, buildId))
+	def fetchToFile(patchUrl: String, file: File) {
+		val url = new URL(patchUrl)
 		val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
 		val statusCode = connection.getResponseCode()
 		if (statusCode != 200) {
-			throw new RuntimeException(String.format("Could not find build with id %s. Got http status code %s", buildId, "" + statusCode))
+			throw new RuntimeException(String.format("Could not find patch %s. Got http status code %s", patchUrl, "" + statusCode))
 		}
 		val fileStream = new BufferedOutputStream(new FileOutputStream(file))
 		val inStream = new GZIPInputStream(connection.getInputStream())

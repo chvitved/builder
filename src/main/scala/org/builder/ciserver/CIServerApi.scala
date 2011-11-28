@@ -3,16 +3,19 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.apache.commons.io.IOUtils
 import org.apache.commons.codec.binary.Base64;
+import org.builder.util.Base64Encoder
 
 class CIServerApi {
   
-  def build(repoUrl: String, buildId: String, ciUrl: String, patchUrl: String) {
+  def build(ciUrl: String, jobName:String, repoUrl: String, patchUrl: String): String = {
     
-	val authStringEnc = encode("chr:chr")
-	val encodedPatchUrl = encode(patchUrl)
-	val encodedRepoUrl = encode(repoUrl)
+	val authStringEnc = Base64Encoder.encode("chr:password")
+	val encodedPatchUrl = Base64Encoder.encode(patchUrl)
+	val encodedRepoUrl = Base64Encoder.encode(repoUrl)
 	
-	val url = new URL(String.format("%s/buildWithParameters?id=%s&patchurl=%s&token=builder", ciUrl, buildId, encodedPatchUrl))
+	val ciBuildUrl = ciUrl + "/job/" + jobName + "/buildWithParameters"
+	
+	val url = new URL(String.format("%s?repourl=%s&patchurl=%s&token=builder", ciUrl, repoUrl, patchUrl))
     val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
 	connection.setRequestProperty("Authorization", "Basic " + authStringEnc);
     val statusCode = connection.getResponseCode() 
@@ -20,9 +23,6 @@ class CIServerApi {
       val response = IOUtils.toString(connection.getErrorStream())
       throw new RuntimeException(String.format("Error when notifying build server. \n using url %s\nGot response %s %S\nbody:\n%s", url.toString(), ""+statusCode, connection.getResponseMessage(), response))
     }
-  }
-  
-  private def encode(str: String) =  {
-    new String(Base64.encodeBase64(str.getBytes("UTF-8")), "UTF-8")
+    url.getPath()
   }
 }

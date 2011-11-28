@@ -4,10 +4,14 @@ import java.io.File
 import org.builder.versioncontrol.VersionControl
 import org.builder.command.Command
 import org.builder.versioncontrol.Patch
-
 import org.builder.versioncontrol.svn.patcher._
+import org.builder.versioncontrol.VCType
 
 class Svn(directory: File, repo: SvnRepo) extends VersionControl{
+  
+  def this(directory: File) {
+    this(directory, null)
+  }
 
   implicit val dir = directory
   
@@ -20,6 +24,10 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
     val command = String.format("svn info")
     SvnInfo.parse(Command.execute(command))
   }
+  
+  def originUrl = info().url
+  
+  def vcType = VCType.svn
   
   override def getLastCommitIdFromOrigin(): String = {
     info.revision

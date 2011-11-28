@@ -30,7 +30,7 @@ object RandomTest extends Properties("files") {
 	  val files = tuple._1
 	  val changes = tuple._2.reverse
 	  debugOutput(files, changes)			
-	  forAll((origin: VersionControl, repo1: VersionControl, client: Client, buildserverDir: File) => {
+	  forAll((origin: VersionControl, repo1: VersionControl, client: Client, buildserverDir: File, serverUrl: String) => {
           println("running test with " + origin.getClass)
 		  origin.init()
           ManipulateFiles.createFiles(files, origin)
@@ -38,15 +38,15 @@ object RandomTest extends Properties("files") {
 
           repo1.clone(origin.dir)
           ManipulateFiles.createChanges(changes, repo1)
-          client.build("http://test.com")
+          client.build(repo1, serverUrl, "doesnt matter", "test")
           FileUtils.compareFiles(buildserverDir, repo1.dir)
 	  })
 	})
 	
-	private def forAll(method: (VersionControl, VersionControl, Client, File) => Boolean) : Boolean = {
+	private def forAll(method: (VersionControl, VersionControl, Client, File, String) => Boolean) : Boolean = {
 	  val vcConfigs: Seq[Scenario] = scenarioFactory.scenarios();
 	  try {
-	    vcConfigs.forall(vcConfig => method(vcConfig.origin, vcConfig.repo1, vcConfig.client, vcConfig.buildserverDir))
+	    vcConfigs.forall(vcConfig => method(vcConfig.origin, vcConfig.repo1, vcConfig.client, vcConfig.buildserverDir, vcConfig.serverUrl))
 	  } finally {
 		println()
 	  }
