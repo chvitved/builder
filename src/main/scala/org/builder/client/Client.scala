@@ -49,16 +49,13 @@ class Client() {
 
 	def applyPatch(patchUrl: String, repoUrl: String, vcType: VCType, dir: File) {
 	  
-	  val pattern = Pattern.compile(""".*\?buildid=(.*+)""")
-	  val matcher = pattern.matcher(patchUrl)
-	  matcher.matches()
-      val buildId = matcher.group(1)
+	  val buildId = BuildId.fromPatchUrl(patchUrl)
       
 	  val vc = VersionControl.getVc(vcType, dir)
       
 	  val revision = BuildId.getRevisionFromId(buildId)			
+	  
 	  if (repoUrl != null) vc.cloneAndCheckout(repoUrl, revision)
-	  else vc.checkout(revision)
 		
 		var patchFile: File = null
 		try {

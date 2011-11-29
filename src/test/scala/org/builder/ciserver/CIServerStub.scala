@@ -10,7 +10,7 @@ class CIServerStub(dir: File, vcType: VCType) extends CIServerApi{
 	
 	val client = new Client()
 	
-	override def build(ciUrl: String, jobName:String, repoUrl: String, patchUrl: String): String = {
+	override def build(ciUrl: String, jobName:String, patchUrl: String, repoUrl: String, vc: String): String = {
 		println("buildserver starting to build")
 		FileUtils.deleteFile(dir)
 		FileUtils.createDir(dir)

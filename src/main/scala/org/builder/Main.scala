@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils
 import org.builder.command.Command
 import org.builder.versioncontrol.VersionControl
 import org.builder.versioncontrol.svn.commandline.Svn
-import org.builder.util.Base64Encoder
+import org.builder.util.UrlEncoder
 import org.builder.versioncontrol.VCType
 import org.builder.client.DiscoverVersionControl
 
@@ -34,9 +34,13 @@ object Main {
 			
 			new Client().build(vc, serverUrl, ciUrl, jobName)
 		}else if ("applyPatch".equals(args(0))) {
-		  val patchUrl = Base64Encoder.decode(args(1))
-		  val repoUrl = Base64Encoder.decode(args(2))
-		  val vcType = VCType.fromString(args(3))
+		  val patchUrl = UrlEncoder.decode(args(1))
+		  val vcType = VCType.fromString(args(2))
+		  val repoUrl = 
+		    if (args.length == 4) { 
+		      UrlEncoder.decode(args(3))
+		    } else null
+		  
 		  val dir = new File(".")
 		  new Client().applyPatch(patchUrl, repoUrl, vcType, dir)
 		} 

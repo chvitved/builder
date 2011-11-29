@@ -2,7 +2,7 @@ package org.builder.util
 import java.net.URLEncoder
 import java.net.URLDecoder
 
-object Base64Encoder {
+object UrlEncoder {
   
   def encode(str: String) = URLEncoder.encode(str, "UTF-8")
   

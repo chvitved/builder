@@ -13,7 +13,7 @@ import java.io.FileInputStream
 import java.io.OutputStream
 import java.io.InputStream
 import java.net.URLEncoder
-import org.builder.util.Base64Encoder
+import org.builder.util.UrlEncoder
 import org.builder.versioncontrol.VCType._
 
 class ServerApi() {
@@ -22,7 +22,7 @@ class ServerApi() {
 		var in : InputStream = null
 		var out: OutputStream =  null
 		try {
-			val url = new URL(String.format("%s/build/?revision=%s&ciurl=%s&job=%s&repo=%s&vc=%s",serverUrl, patch.revision, Base64Encoder.encode(ciUrl), Base64Encoder.encode(jobName), repoUrl, vc.toString))
+			val url = new URL(String.format("%s/build/?revision=%s&ciurl=%s&job=%s&repo=%s&vc=%s",serverUrl, patch.revision, UrlEncoder.encode(ciUrl), UrlEncoder.encode(jobName), UrlEncoder.encode(repoUrl), vc.toString))
 			val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
 			connection.setDoOutput(true)
 			connection.setRequestProperty("Content-Type", "application/x-gzip")
