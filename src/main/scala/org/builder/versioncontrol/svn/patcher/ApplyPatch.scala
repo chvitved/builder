@@ -11,8 +11,11 @@ import java.io.BufferedOutputStream
 import java.io.BufferedInputStream
 import org.apache.commons.io.FileUtils
 import java.io.InputStream
+import org.apache.log4j.Logger
 
 object ApplyPatch {
+  
+  val logger = Logger.getLogger(classOf[ApplyPatch])
   
   
   def applyPatch(patch: File, repoDir: File) {
@@ -47,9 +50,10 @@ object ApplyPatch {
       val file = new File(repoDir, lines.nextLine())
       val deleted = file.delete()
       if (!deleted) {
-        println("could not delete file " + file)
+        logger.error("could not delete file " + file)
       }
     }
   }
   
 }
+class ApplyPatch{}

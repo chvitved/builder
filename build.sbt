@@ -24,7 +24,8 @@ libraryDependencies ++= Seq(
     "com.novocode" % "junit-interface" % "0.7" % "test->default",
     //"org.tmatesoft.svnkit" % "svnkit" % "1.3.6-v1"
     "org.apache.httpcomponents" % "httpclient" % "4.1.2",
-    "org.apache.httpcomponents" % "httpmime" % "4.0.1"
+    "org.apache.httpcomponents" % "httpmime" % "4.0.1",
+    "log4j" % "log4j" % "1.2.16"
 )
 
 seq(oneJarSettings: _*)

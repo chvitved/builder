@@ -8,20 +8,23 @@ import org.builder.versioncontrol.VersionControl
 import org.builder.versioncontrol.Patch
 import org.builder.util.Properties
 import org.builder.versioncontrol.VCType._
+import org.apache.log4j.Logger
 
 class Client() {
+  
+  val logger = Logger.getLogger(classOf[Client])
 
   private def createPatch(vc: VersionControl, file: File): Patch  = {
     if (checkForUntrackedFiles(vc)) {
 		return null
 	}
 	if (!vc.hasChanges()) {
-		println("No changes found...")
+		logger.info("No changes found...")
 		return null
 	}
 	val patch = vc.createPatch(file)
 	if (file.length() == 0) {
-		println("No changes found...")
+		logger.info("No changes found...")
 		return null
 	}
 	patch
@@ -33,7 +36,8 @@ class Client() {
 	  if (patch != null) {
 		  val server = new ServerApi()
 		  val buildResource = server.send(serverUrl, patch, ciUrl, jobName, vc.originUrl, vc.vcType)
-		  println(String.format("Successfully send build request. Follow it at %s", buildResource))
+		  logger.info(String.format("Successfully send build request. Follow it at %s", buildResource))
+		  patchFile.delete();
 		  true
 	  } else false
 		

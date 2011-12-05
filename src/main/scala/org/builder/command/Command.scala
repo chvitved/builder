@@ -8,11 +8,14 @@ import scala.sys.process.ProcessIO
 import java.io.OutputStream
 import java.io.ByteArrayInputStream
 import org.apache.commons.io.IOUtils
+import org.apache.log4j.Logger
 
 object Command {
+  
+  val logger = Logger.getLogger(classOf[Command])
 	
   def execute(command: String, file: File)( implicit dir: File) {
-   println(command)
+   logger.debug(command)
    val tokenizedCommand: Seq[String] = tokenizeCommand(command)
    val pb = Process(tokenizedCommand, dir) #> file
    val exitValue = pb !	 
@@ -30,15 +33,15 @@ object Command {
     val error = new StringBuilder()
     
     def stdOut(str: String) = {
-   		System.out.println(str)
+   		logger.info(str)
    		output.append(str + "\n")
     }
     def stdErr(str: String) = {
-      System.err.println(str)
+      logger.error(str)
       error.append(str + "\n")
     }
    	val exitValue = try {
-    	 println(command)
+    	 logger.debug(command)
     	 pb ! ProcessLogger(stdOut, stdErr)
     } catch {
       case ex: Exception => throw new CommandException(command, ex, dir)
@@ -64,6 +67,7 @@ object Command {
     	  }
      tokenizedCommand.flatten.filter(_.trim() != "")
   }
+  class Command{}
   
   class CommandException(command: String, ex: Exception, dir: File) 
   		extends Exception("Is your version control executeable on the path? " + "Could not invoke command '" + command + "' in directory " + dir + ". " + ex.getMessage(), ex)

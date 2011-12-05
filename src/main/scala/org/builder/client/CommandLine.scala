@@ -1,11 +1,14 @@
 package org.builder.client
 import java.util.Scanner
+import org.apache.log4j.Logger
 
 class CommandLine {
   
+  val logger = Logger.getLogger(classOf[CommandLine])
+  
   def yesNo(output: String) : Boolean = {
-    println(output)
-    println("answer y/n")
+    logger.info(output)
+    logger.info("answer y/n")
     val scanner = new Scanner(System.in)
     var res = false
     var gotAnswer = false
@@ -17,7 +20,7 @@ class CommandLine {
     		}
     	  case NotUnderstood() => {
     	    gotAnswer = false
-    	    println("Could not understand your answer try again")
+    	    logger.info("Could not understand your answer try again")
     	  }
     	}
     }

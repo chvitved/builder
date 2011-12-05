@@ -10,7 +10,7 @@ class CIServerApi {
   
   def build(ciUrl: String, jobName:String, patchUrl: String, repoUrl: String, vcType: String): String = {
     
-	val authStringEnc = new String(Base64.encodeBase64("chr:password".getBytes()))
+	//val authStringEnc = new String(Base64.encodeBase64("chr:password".getBytes()))
 	val encodedPatchUrl = UrlEncoder.encode(patchUrl)
 	val encodedRepoUrl = UrlEncoder.encode(repoUrl)
 	val revision = BuildId.getRevisionFromId(BuildId.fromPatchUrl(patchUrl))
@@ -18,9 +18,8 @@ class CIServerApi {
 	val ciBuildUrl = ciUrl + "/job/" + jobName + "/buildWithParameters"
 	
 	val url = new URL(String.format("%s?repourl=%s&vc=%s&patchurl=%s&rev=%s&token=builder", ciBuildUrl, encodedRepoUrl, vcType, encodedPatchUrl, revision))
-	println(url)
     val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
-	connection.setRequestProperty("Authorization", "Basic " + authStringEnc);
+	//connection.setRequestProperty("Authorization", "Basic " + authStringEnc);
     val statusCode = connection.getResponseCode() 
     if (statusCode!= 200) {
       val response = IOUtils.toString(connection.getErrorStream())
