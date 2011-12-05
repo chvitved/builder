@@ -14,6 +14,7 @@ object SvnInfo {
   private def extractVal(str: String, pattern: String): java.lang.String = {
     val p = Pattern.compile(pattern)
     val matcher = p.matcher(str)
+    matcher.find
     val url = matcher.group(2)
     url
   }

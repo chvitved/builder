@@ -6,8 +6,11 @@ import org.builder.command.Command
 import org.builder.versioncontrol.Patch
 import org.builder.versioncontrol.svn.patcher._
 import org.builder.versioncontrol.VCType
+import org.apache.log4j.Logger
 
 class Svn(directory: File, repo: SvnRepo) extends VersionControl{
+  
+  val logger = Logger.getLogger(classOf[Svn])
   
   def this(directory: File) {
     this(directory, null)
@@ -36,9 +39,6 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   override def createPatch(f: File): Patch = {
     val svnInfo = info
     val id = svnInfo.revision
-//    val command = String.format("""svn diff --force --diff-cmd diff -x "-au --binary"""")
-//    Command.execute(command, f.getCanonicalFile())
-
     CreatePatch.createPatchFromStatus(status, dir, f)
     Patch(f, id)
     
@@ -97,7 +97,9 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   
   def status: String = {
     val command = "svn st"
-    Command.execute(command)
+    val status = Command.execute(command)
+    logger.info(status)
+    status
   }
   
   override def hasChanges(): Boolean = {
@@ -107,9 +109,12 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   }
   
   def untrackedFiles(): Seq[String] = {
-  	val command = "svn status"
-  	val output = Command.execute(command)
-  	output.split("\n").filter(_.startsWith("?")).map(_.replaceFirst("""\?\s++""", ""))
+  	val output = status
+  	val res =  output.split("\n").filter(_.startsWith("?")).map(_.replaceFirst("""\?\s++""", ""))
+  	if (!res.isEmpty) {
+  	  logger.info(output)
+  	}
+  	res
   }
   
   private def checkFilePath(file: File): Unit = {

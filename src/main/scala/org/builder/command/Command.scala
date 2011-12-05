@@ -33,11 +33,9 @@ object Command {
     val error = new StringBuilder()
     
     def stdOut(str: String) = {
-   		logger.info(str)
    		output.append(str + "\n")
     }
     def stdErr(str: String) = {
-      logger.error(str)
       error.append(str + "\n")
     }
    	val exitValue = try {
