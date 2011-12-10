@@ -9,9 +9,12 @@ import org.apache.commons.io.FileUtils
 import scala.sys.process.Process
 import java.io.ByteArrayOutputStream
 import org.builder.versioncontrol.VCType
+import org.apache.log4j.Logger
 	
 class Git(directory: File) extends VersionControl{
 
+  val logger = Logger.getLogger(classOf[Git])
+  
   implicit val dir = directory
   
   override def commit(message: String) {
@@ -32,6 +35,7 @@ class Git(directory: File) extends VersionControl{
     val id = getLastCommitIdFromOrigin()
     val command = String.format("git diff --binary %s ", id)
     Command.execute(command, f.getCanonicalFile())
+    logger.info(status)
     Patch(f, id)
   }
   
@@ -102,16 +106,23 @@ class Git(directory: File) extends VersionControl{
     Command.execute(command)
   }
   
+  private def status : String = {
+    val command = "git status --porcelain"
+  	Command.execute(command)
+  }
+  
   override def hasChanges(): Boolean = {
-  	val command = "git status "
-  	val output = Command.execute(command)
-  	!output.contains("nothing to commit")
+  	val st = status
+  	!st.isEmpty()
   }
   
   def untrackedFiles(): Seq[String] = {
-  	val command = "git status --porcelain"
-  	val output = Command.execute(command)
-  	output.split("\n").filter(_.startsWith("??")).map(_.replace("?? ", ""))
+    val st = status
+  	val res = st.split("\n").filter(_.startsWith("??")).map(_.replace("?? ", ""))
+  	if (!res.isEmpty) {
+  	  logger.info(st)
+  	}
+    res
   }
   
   private def checkFilePath(file: File): Unit = {

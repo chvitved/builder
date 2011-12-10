@@ -26,7 +26,7 @@ object Main {
 		  Command.execute("git")(new File("."))
 		} else if ("build".equals(args(0))) {
 			val dir = new File(".")
-			val properties = new Properties(new File(dir, ".builder-properties"))
+			val properties = new Properties(new File(dir, "./builder/builder.properties"))
 			val serverUrl = properties.readProperty("server.url")
 			val ciUrl = properties.readProperty("ci.url")
 			val jobName = properties.readProperty("ci.job")
