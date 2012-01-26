@@ -110,11 +110,7 @@ class Svn(directory: File, repo: SvnRepo) extends VersionControl{
   
   def untrackedFiles(): Seq[String] = {
   	val output = status
-  	val res =  output.split("\n").filter(_.startsWith("?")).map(_.replaceFirst("""\?\s++""", ""))
-  	if (!res.isEmpty) {
-  	  logger.info(output)
-  	}
-  	res
+  	output.split("\n").filter(_.startsWith("?")).map(_.replaceFirst("""\?\s++""", ""))
   }
   
   private def checkFilePath(file: File): Unit = {

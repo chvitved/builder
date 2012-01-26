@@ -30,4 +30,4 @@ libraryDependencies ++= Seq(
 
 seq(oneJarSettings: _*)
 
-mainClass in oneJar := Some("org.builder.Main")
+//mainClass in oneJar := Some("org.builder.Main")
