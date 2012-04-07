@@ -15,7 +15,7 @@ object Command {
   val logger = Logger.getLogger(classOf[Command])
 	
   def execute(command: String, file: File)( implicit dir: File) {
-   logger.debug(command)
+   logger.info(command)
    val tokenizedCommand: Seq[String] = tokenizeCommand(command)
    val pb = Process(tokenizedCommand, dir) #> file
    val exitValue = pb !	 
@@ -39,7 +39,7 @@ object Command {
       error.append(str + "\n")
     }
    	val exitValue = try {
-    	 logger.debug(command)
+    	 logger.info(command)
     	 pb ! ProcessLogger(stdOut, stdErr)
     } catch {
       case ex: Exception => throw new CommandException(command, ex, dir)

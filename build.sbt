@@ -1,17 +1,21 @@
 name := "builder"
 
-scalaVersion := "2.9.0-1"
+organization := "org.builder"
+
+scalaVersion := "2.9.1"
 
 // The := method used in Name and Version is one of two fundamental methods.
 // The other method is <<=
 // All other initialization methods are implemented in terms of these.
-version := "0.1"
+version := "0.2.0"
+
+publishTo := Some("Triforks Nexus" at "http://nexus.ci82.trifork.com/content/repositories/trifork-internal/")
 
 transitiveClassifiers := Seq("sources")
 
 resolvers += {
-  val snvkitRepoUrl = new java.net.URL("http://maven.tmatesoft.com/content/repositories/releases/")
-  Resolver.url("Svnkit Repository", snvkitRepoUrl)
+  val triforkRepoUrl = new java.net.URL("http://nexus.ci82.trifork.com/content/groups/public/")
+  Resolver.url("Trifork repository", triforkRepoUrl)
 }
 
 // Add multiple dependencies

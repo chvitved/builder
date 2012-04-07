@@ -1,3 +1,9 @@
+username password i config
+brugernavn password til db
+builder-patch.txt
+one-jar publiseres ikke
+logning
+
 skal man kunne sende noget afsted hvis der er konflikter
 
 Problemstilling om man fanger alle ændringer i working dir

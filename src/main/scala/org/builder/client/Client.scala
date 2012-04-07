@@ -32,12 +32,13 @@ class Client() {
 
 	def build(vc: VersionControl, serverUrl: String, ciUrl: String, jobName: String): Boolean = {
 	  val patchFile = new File(vc.dir, "builder-patch.txt")
+	  if (patchFile.exists()) patchFile.delete() 
 	  val patch = createPatch(vc, patchFile)
 	  if (patch != null) {
 		  val server = new ServerApi()
 		  val buildResource = server.send(serverUrl, patch, ciUrl, jobName, vc.originUrl, vc.vcType)
 		  logger.info(String.format("Successfully send build request. Follow it at %s", buildResource))
-		  patchFile.delete();
+		  //patchFile.delete();
 		  true
 	  } else false
 		
@@ -60,6 +61,7 @@ class Client() {
 	  val revision = BuildId.getRevisionFromId(buildId)			
 	  
 	  if (repoUrl != null) vc.cloneAndCheckout(repoUrl, revision)
+	  else vc.checkout(revision)
 		
 		var patchFile: File = null
 		try {

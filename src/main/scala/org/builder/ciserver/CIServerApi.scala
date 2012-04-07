@@ -13,7 +13,6 @@ class CIServerApi {
     
     val buildId = getNextBuildId(ciUrl, jobName)
     
-	//val authStringEnc = new String(Base64.encodeBase64("chr:password".getBytes()))
 	val encodedPatchUrl = UrlEncoder.encode(patchUrl)
 	val encodedRepoUrl = UrlEncoder.encode(repoUrl)
 	val revision = BuildId.getRevisionFromId(BuildId.fromPatchUrl(patchUrl))
@@ -37,6 +36,8 @@ class CIServerApi {
     
   private def httpGet(url: URL): String = {
     val connection =  url.openConnection().asInstanceOf[HttpURLConnection]
+    val authStringEnc = new String(Base64.encodeBase64("chr:4446aa5477f737cbc899ecd0ab1133ef".getBytes()))
+    connection.setRequestProperty("Authorization", "Basic "+ authStringEnc);
     val statusCode = connection.getResponseCode() 
 	if (statusCode!= 200) {
       val response = IOUtils.toString(connection.getErrorStream())

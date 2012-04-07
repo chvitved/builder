@@ -36,10 +36,10 @@ object Main {
 		}else if ("applyPatch".equals(args(0))) {
 		  val patchUrl = UrlEncoder.decode(args(1))
 		  val vcType = VCType.fromString(args(2))
-		  val repoUrl = 
-		    if (args.length == 4) { 
-		      UrlEncoder.decode(args(3))
-		    } else null
+		  val repoUrl = null
+//		    if (args.length == 4) { 
+//		      UrlEncoder.decode(args(3))
+//		    } else null
 		  
 		  val dir = new File(".")
 		  new Client().applyPatch(patchUrl, repoUrl, vcType, dir)
