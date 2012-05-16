@@ -34,23 +34,25 @@ class CommandTest {
   }
   
   @Test
-  def outputIsStreamedToStdOut() {
+  def outputIsReturnedFromCommand() {
     val baos = new ByteArrayOutputStream()
     System.setOut(new PrintStream(baos))
     val output = Command.execute("git --help")
-    assertTrue(new String(baos.toByteArray()).contains(output))
+    assertTrue(output.contains("usage: git"))
   }
   
   @Test
-  def errorIsStreamedToStdOut() {
-    val baos = new ByteArrayOutputStream()
-    System.setErr(new PrintStream(baos))
+  def stdErrorIsInException() {
+    val err = new ByteArrayOutputStream()
+    System.setErr(new PrintStream(err))
     
     try {
-    	Command.execute("git")
+    	Command.execute("git a")
+    	fail()
     }catch {
-    	case ex: Command.CommandNonZeroExitCodeException => 
-    	  assertEquals(ex.error, new String(baos.toByteArray()))
+    	case ex: Command.CommandNonZeroExitCodeException => {
+    	  assertTrue(ex.error.contains("is not a git command"))
+    	}	  
     	case ex: Exception => fail()
     }
   }

@@ -44,7 +44,7 @@ object RandomTest extends Properties("files") {
 	})
 	
 	private def forAll(method: (VersionControl, VersionControl, Client, File, String) => Boolean) : Boolean = {
-	  val vcConfigs: Seq[Scenario] = scenarioFactory.scenarios();
+	  val vcConfigs: Seq[ScenarioConfig] = scenarioFactory.scenarios();
 	  try {
 	    vcConfigs.forall(vcConfig => method(vcConfig.origin, vcConfig.repo1, vcConfig.client, vcConfig.buildserverDir, vcConfig.serverUrl))
 	  } finally {

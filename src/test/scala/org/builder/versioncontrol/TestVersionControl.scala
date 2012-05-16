@@ -84,9 +84,9 @@ class TestVersionControl extends ReposTest{
 	  	new FileWriter(patchFile).write("wrong patch")
 	  	try {
 	  		origin.applyPatch(patchFile)
+	  		fail()
 	  	} catch {
-	  		case ex: CommandNonZeroExitCodeException =>
-	  		case ex: Exception => fail()
+	  		case ex: Exception => 
 	  	}
     })
   }

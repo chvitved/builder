@@ -1,8 +1,12 @@
-username password i config
-brugernavn password til db
-builder-patch.txt
+flere lokale commits
+lokale commits plus working dir
 one-jar publiseres ikke
+
+
+username password i config
 logning
+
+change ForAll in junit tests to use junits parametrerized tests
 
 skal man kunne sende noget afsted hvis der er konflikter
 

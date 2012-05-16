@@ -39,7 +39,6 @@ object Command {
       error.append(str + "\n")
     }
    	val exitValue = try {
-    	 logger.info(command)
     	 pb ! ProcessLogger(stdOut, stdErr)
     } catch {
       case ex: Exception => throw new CommandException(command, ex, dir)

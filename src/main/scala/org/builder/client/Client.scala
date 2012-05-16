@@ -38,7 +38,7 @@ class Client() {
 		  val server = new ServerApi()
 		  val buildResource = server.send(serverUrl, patch, ciUrl, jobName, vc.originUrl, vc.vcType)
 		  logger.info(String.format("Successfully send build request. Follow it at %s", buildResource))
-		  //patchFile.delete();
+		  patchFile.delete();
 		  true
 	  } else false
 		

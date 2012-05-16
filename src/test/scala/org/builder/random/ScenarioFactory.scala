@@ -23,7 +23,6 @@ class ScenarioFactory(baseDir: File) {
 	val originGitVc = new Git(originGitDir)
 	val repo1GitVc = new Git(repo1GitDir)
 	
-	val buildserverGitVc = new Git(buildserverDir);
     val buildServerStubGit = new CIServerStub(buildserverDir, VCType.git)
     val serverWithGit = new Server().start(buildServerStubGit, 7000)
     
@@ -44,7 +43,7 @@ class ScenarioFactory(baseDir: File) {
     
     
 
-  def scenarios(): Seq[Scenario] = {
+  def scenarios(): Seq[ScenarioConfig] = {
     FileUtils.deleteFile(baseDir)
 	FileUtils.createDir(origin)
 	FileUtils.createDir(repo1)
@@ -56,13 +55,13 @@ class ScenarioFactory(baseDir: File) {
     FileUtils.createDir(originSvnDir)
     FileUtils.createDir(repo1SvnDir)
 
-    val gitScenario = Scenario(originGitVc, repo1GitVc, new Client(), buildserverDir, serverWithGitUrl)    
-	val svnScenario = Scenario(originSvnVc, repo1SvnVc, new Client(), buildserverDir, serverWithSvnUrl)
+    val gitScenario = ScenarioConfig(originGitVc, repo1GitVc, new Client(), buildserverDir, serverWithGitUrl)    
+	val svnScenario = ScenarioConfig(originSvnVc, repo1SvnVc, new Client(), buildserverDir, serverWithSvnUrl)
     List(gitScenario, svnScenario)
   }
 }
 
-case class Scenario(
+case class ScenarioConfig(
   val origin : VersionControl,
   val repo1 : VersionControl,
   val client: Client,

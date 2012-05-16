@@ -35,3 +35,5 @@ libraryDependencies ++= Seq(
 seq(oneJarSettings: _*)
 
 //mainClass in oneJar := Some("org.builder.Main")
+
+parallelExecution in Test := false
